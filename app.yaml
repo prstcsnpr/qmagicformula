@@ -1,0 +1,10 @@
+application: qmagicformula
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: no
+
+handlers:
+- url: /tasks/update.*
+  script: update_stock_info.py
+#  login: admin
