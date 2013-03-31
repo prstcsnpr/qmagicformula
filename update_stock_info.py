@@ -136,8 +136,37 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
 
 class UpdateEarningsHandler(webapp.RequestHandler):
     
-    def post(self):
+    def __get_page_content(self, url):
+        result = urlfetch.fetch(url=url)
+        if result.status_code == 200:
+            data = result.content
+        map = {}
+        lines = data.decode('GBK').encode('UTF-8').split('\n')
+        for line in lines:
+            fields = line.split('\t')
+            for i in range(len(fields) - 2):
+                if i + 1 not in map:
+                    map[i + 1] = {}
+                map[i + 1][fields[0]] = fields[i + 1]
+        results = {}
+        for k in map:
+            if '报表日期' in map[k]:
+                results[map[k]['报表日期']] = m[k]
+        return results
+    
+    def __get_profit_earnings(self):
         ticker = self.request.get('ticker')
+        url = "http://money.finance.sina.com.cn/corp/go.php/vDOWN_ProfitStatement/displaytype/4/stockid/%s/ctrl/all.phtml" % (ticker)
+        return self.__get_page_content(url)
+    
+    def __get_balance_earnings(self):
+        ticker = self.request.get('ticker')
+        url = "http://money.finance.sina.com.cn/corp/go.php/vDOWN_BalanceSheet/displaytype/4/stockid/%s/ctrl/all.phtml" % (ticker)
+        return self.__get_page_content(url)
+    
+    def get(self):
+        
+        self.__get_balance_earnings()
         
         
 application = webapp.WSGIApplication([('/tasks/updatestockinfo', UpdateStockInfoHandler),
