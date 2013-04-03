@@ -5,6 +5,21 @@ api_version: 1
 threadsafe: no
 
 handlers:
-- url: /tasks/update.*
+- url: /tasks/updatestockinfo
   script: update_stock_info.py
 #  login: admin
+
+- url: /tasks/updateallmarketcapital
+  script: update_stock_info.py
+#  login: admin
+
+- url: /tasks/updatesinglemarketcapital
+  script: update_stock_info.py
+#  login: admin
+
+- url: /tasks/updateearnings
+  script: update_stock_info.py
+#  login: admin
+
+- url: /tasks/updateexchangerate
+  script: exchange_rate.py

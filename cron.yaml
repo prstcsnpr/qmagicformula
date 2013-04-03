@@ -1,0 +1,7 @@
+cron:
+- description: update exchange rate
+  url: /tasks/updateexchangerate
+  schedule: every 1 minutes
+- description: update stock info
+  url: /tasks/updatestockinfo
+  schedule: every 5 hours
