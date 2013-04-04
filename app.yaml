@@ -23,3 +23,6 @@ handlers:
 
 - url: /tasks/updateexchangerate
   script: exchange_rate.py
+  
+- url: /tasks/showstockinfo
+  script: show_stock_info.py
