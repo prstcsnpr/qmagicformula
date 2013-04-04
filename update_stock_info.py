@@ -24,12 +24,6 @@ class UpdateStockInfoHandler(webapp.RequestHandler):
         
         
 class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
-
-    def __get_exchange_rate(self, area):
-        url = "http://download.finance.yahoo.com/d/quotes.html?s=%sCNY=X&f=l1" % area
-        result = urlfetch.fetch(url=url)
-        if result.status_code == 200:
-            return result.content.strip()
     
     def __get_page_content(self):
         url = 'https://www.google.com.hk/finance?output=json&start=0&num=10000&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
@@ -133,7 +127,6 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         ticker = self.request.get('ticker')
         market_capital = self.__get_market_capital()
         self.__update_market_capital(market_capital)
-#            logging.warn('Market capital is %s for %s' % (market_capital, ticker))
         taskqueue.add(url='/tasks/updateearnings', params={'ticker' : ticker})
         
 
