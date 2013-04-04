@@ -1,7 +1,7 @@
 cron:
 - description: update exchange rate
   url: /tasks/updateexchangerate
-  schedule: every 1 minutes
+  schedule: every 1 hours
 - description: update stock info
   url: /tasks/updatestockinfo
-  schedule: every 5 hours
+  schedule: every mon,tue,wed,thu,fri,sat,sun of month 7:05
