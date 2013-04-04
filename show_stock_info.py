@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+from google.appengine.api import mail
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -55,6 +56,13 @@ class ShowStockInfoHandler(webapp.RequestHandler):
             b += results[i].ownership_interest
             results[i].format()
         return p/b, results
+    
+    def __send_mail(self, content):
+        mail.send_mail(sender="prstcsnpr@gmail.com",
+                       to="prstcsnpr@gmail.com",
+                       subject="神奇公式",
+                       body=None,
+                       html=content)
             
     def get(self):
         values = {}
@@ -70,7 +78,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values['stocks'] = stocks[0 : position]
         values['PB'] = "%.4f" % (pb)
         content = template.render('qmagicformula.html', values)
-        self.response.out.write(content)
+        self.__send_mail(content)
             
         
 application = webapp.WSGIApplication([('/tasks/showstockinfo', ShowStockInfoHandler)],
