@@ -20,5 +20,7 @@ qmagicformula
 本小组按照神奇公式定期更新A股、B股股票，过滤了银行股，并且将ROE<15%或PE>20的价值成分相对较低的股票标红，提供给大家以供参考，欢迎大家提供宝贵意见一起完善公式 
 
 欢迎大家参与讨论：
+
 Google Groups: http://groups.google.com/group/magicformula/ 
+
 QQ群：262244892
