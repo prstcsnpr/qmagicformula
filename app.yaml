@@ -7,22 +7,28 @@ threadsafe: no
 handlers:
 - url: /tasks/updatestockinfo
   script: update_stock_info.py
-#  login: admin
+  login: admin
 
 - url: /tasks/updateallmarketcapital
   script: update_stock_info.py
-#  login: admin
+  login: admin
 
 - url: /tasks/updatesinglemarketcapital
   script: update_stock_info.py
-#  login: admin
+  login: admin
 
 - url: /tasks/updateearnings
   script: update_stock_info.py
-#  login: admin
+  login: admin
 
 - url: /tasks/updateexchangerate
   script: exchange_rate.py
+  login: admin
   
 - url: /tasks/showstockinfo
   script: show_stock_info.py
+  login: admin
+  
+- url: /
+  static_dir: static
+  login: admin
