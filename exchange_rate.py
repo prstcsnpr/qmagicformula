@@ -9,21 +9,21 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 
 class ExchangeRate(db.Model):
-    hkd = db.StringProperty()
-    usd = db.StringProperty()
+    hkd = db.StringProperty(indexed=False)
+    usd = db.StringProperty(indexed=False)
     
 
 def get():
-    entry = memcache.get('exchange_rate')
+    entry = memcache.get("exchange_rate")
     if entry is None:
         entry = ExchangeRate.get_or_insert('exchange_rate')
-        memcache.add('exchange_rate', entry)
+        memcache.add("exchange_rate", entry)
     return entry
 
 
 def put(entry):
     entry.put()
-    memcache.set('exchange_rate', entry)
+    memcache.set("exchange_rate", entry)
     
     
 class UpdateExchangeRateHandler(webapp.RequestHandler):
