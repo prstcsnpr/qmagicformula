@@ -6,18 +6,18 @@ from google.appengine.ext import db
 
 
 class Stock(db.Model):
-    ticker = db.StringProperty()
-    title = db.StringProperty()
-    market_capital = db.FloatProperty()
-    market_capital_date = db.DateProperty()
-    bank_flag = db.BooleanProperty()
-    ebit = db.FloatProperty()
-    enterprise_value = db.FloatProperty()
-    income = db.FloatProperty()
-    tangible_asset = db.FloatProperty()
-    ownership_interest = db.FloatProperty()
-    net_profit = db.FloatProperty()
-    earnings_date = db.DateProperty()
+    ticker = db.StringProperty(indexed=False)
+    title = db.StringProperty(indexed=False)
+    market_capital = db.FloatProperty(indexed=False)
+    market_capital_date = db.DateProperty(indexed=False)
+    bank_flag = db.BooleanProperty(indexed=False)
+    ebit = db.FloatProperty(indexed=False)
+    enterprise_value = db.FloatProperty(indexed=False)
+    income = db.FloatProperty(indexed=False)
+    tangible_asset = db.FloatProperty(indexed=False)
+    ownership_interest = db.FloatProperty(indexed=False)
+    net_profit = db.FloatProperty(indexed=False)
+    earnings_date = db.DateProperty(indexed=False)
     
     
 class StockView(object):
