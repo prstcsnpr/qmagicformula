@@ -25,8 +25,19 @@ class UpdateStockInfoHandler(webapp.RequestHandler):
         
 class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
     
+    def post(self):
+        for i in range(5):
+            taskqueue.add(url='/tasks/updatemanymarketcapital',
+                          queue_name='queue'+str(i),
+                          params={'start' : str(i * 1000)})
+        
+        
+class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
+    
     def __get_page_content(self):
-        url = 'https://www.google.com.hk/finance?output=json&start=0&num=10000&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
+        start = self.request.get('start')
+        url = 'https://www.google.com.hk/finance?output=json&start=' + start + '&num=1000&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
+        logging.info(url)
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
             data = result.content
@@ -40,19 +51,21 @@ class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
         hkd = exchange_rate.get().hkd
         data = self.__get_page_content()
         data = json.loads(data)
-        count=0
+        count = 0
         for stock in data['searchresults']:
             if stock['ticker'].find('399')==0 or stock['ticker'].find('000')==0 and stock['exchange']=='SHA':
                 continue
+            queue_name = 'queue' + str(count % 10)
             taskqueue.add(url='/tasks/updatesinglemarketcapital',
-                          #queue_name='queue'+str(count % 10),
+                          queue_name=queue_name,
                           params={'ticker' : stock['ticker'],
                                   'title' : stock['title'],
                                   'exchange' : stock['exchange'],
                                   'local_currency_symbol' : stock['local_currency_symbol'],
                                   'value' : stock['columns'][0]['value'],
                                   'usd' : usd,
-                                  'hkd' : hkd})
+                                  'hkd' : hkd,
+                                  'queue_name' : queue_name})
             count += 1
         
 
@@ -125,9 +138,12 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
     
     def post(self):
         ticker = self.request.get('ticker')
+        queue_name = self.request.get('queue_name')
         market_capital = self.__get_market_capital()
         self.__update_market_capital(market_capital)
-        taskqueue.add(url='/tasks/updateearnings', params={'ticker' : ticker})
+        taskqueue.add(url='/tasks/updateearnings',
+                      queue_name=queue_name,
+                      params={'ticker' : ticker})
         
 
 class UpdateEarningsHandler(webapp.RequestHandler):
@@ -339,6 +355,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             self.__update_earnings()
         
 application = webapp.WSGIApplication([('/tasks/updatestockinfo', UpdateStockInfoHandler),
+                                      ('/tasks/updatemanymarketcapital', UpdateManyMarketCapitalHandler),
                                       ('/tasks/updateallmarketcapital', UpdateAllMarketCapitalHandler),
                                       ('/tasks/updatesinglemarketcapital', UpdateSingleMarketCapitalHandler),
                                       ('/tasks/updateearnings', UpdateEarningsHandler)],
