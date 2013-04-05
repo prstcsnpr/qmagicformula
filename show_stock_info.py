@@ -68,6 +68,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
+        logging.info('No. of total stocks is %d' % (len(stocks)))
         pb, stocks = self.__magicformula(stocks)
         position=50
         while position<len(stocks):
@@ -79,6 +80,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values['PB'] = "%.4f" % (pb)
         content = template.render('qmagicformula.html', values)
         self.__send_mail(content)
+        self.response.write(content)
             
         
 application = webapp.WSGIApplication([('/tasks/showstockinfo', ShowStockInfoHandler)],
