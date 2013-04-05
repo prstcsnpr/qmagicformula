@@ -4,4 +4,4 @@ cron:
   schedule: every 1 hours
 - description: update stock info
   url: /tasks/updatestockinfo
-  schedule: every mon,tue,wed,thu,fri,sat,sun of month 7:05
+  schedule: every mon,tue,wed,thu,fri of month 7:05
