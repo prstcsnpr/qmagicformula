@@ -61,7 +61,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to="prstcsnpr@gmail.com",
                        subject="神奇公式",
-                       body=None,
+                       body='',
                        html=content)
             
     def get(self):
@@ -79,8 +79,9 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values['stocks'] = stocks[0 : position]
         values['PB'] = "%.4f" % (pb)
         content = template.render('qmagicformula.html', values)
-        self.__send_mail(content)
         self.response.write(content)
+        self.__send_mail(content)
+        
             
         
 application = webapp.WSGIApplication([('/tasks/showstockinfo', ShowStockInfoHandler)],
