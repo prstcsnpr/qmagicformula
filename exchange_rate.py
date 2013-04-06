@@ -14,16 +14,12 @@ class ExchangeRate(db.Model):
     
 
 def get():
-    entry = memcache.get("exchange_rate")
-    if entry is None:
-        entry = ExchangeRate.get_or_insert('exchange_rate')
-        memcache.add("exchange_rate", entry)
+    entry = ExchangeRate.get_or_insert('exchange_rate')
     return entry
 
 
 def put(entry):
     entry.put()
-    memcache.set("exchange_rate", entry)
     
     
 class UpdateExchangeRateHandler(webapp.RequestHandler):
