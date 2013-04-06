@@ -114,7 +114,7 @@ def get(ticker):
     return entry
 
 
-def put(entry):
+def put(ticker, entry):
     entry.put()
-    memcache.set(entry.ticker, entry)
+    memcache.set(ticker, entry)
     
