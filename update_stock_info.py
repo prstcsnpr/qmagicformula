@@ -265,9 +265,6 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __update_earnings(self):
         ticker = self.request.get('ticker')
         entry = stock.get(ticker)
-        if entry.bank_flag:
-            logging.info("%s is a bank" % (ticker))
-            return
         balance = self.__get_balance_earnings()
         profit = self.__get_profit_earnings()
         year = datetime.date.today().year
