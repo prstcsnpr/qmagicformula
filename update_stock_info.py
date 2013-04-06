@@ -16,27 +16,37 @@ import exchange_rate
 import stock
 
 
+class BlankEarnings(Exception):
+    
+    def __init__(self, value):
+        self.value = value
+        
+    def __str__(self):
+        return repr(self.value)
+
+
 class UpdateStockInfoHandler(webapp.RequestHandler):
     
     def get(self):
-        taskqueue.add(url='/tasks/updateallmarketcapital')
+        taskqueue.add(url='/tasks/updateallmarketcapital',
+                      queue_name='updateallmarketcapital')
         print 'OK'
         
         
 class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
     
     def post(self):
-        for i in range(5):
+        for i in range(8):
             taskqueue.add(url='/tasks/updatemanymarketcapital',
-                          queue_name='queue'+str(i),
-                          params={'start' : str(i * 1000)})
+                          queue_name='updatemanymarketcapital',
+                          params={'start' : str(i * 500)})
         
         
 class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
     
     def __get_page_content(self):
         start = self.request.get('start')
-        url = 'https://www.google.com.hk/finance?output=json&start=' + start + '&num=1000&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
+        url = 'https://www.google.com.hk/finance?output=json&start=' + start + '&num=500&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
         logging.info(url)
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
@@ -57,7 +67,7 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
                 continue
             queue_name = 'queue' + str(count % 10)
             taskqueue.add(url='/tasks/updatesinglemarketcapital',
-                          queue_name=queue_name,
+                          queue_name='updatesinglemarketcapital',
                           params={'ticker' : stock['ticker'],
                                   'title' : stock['title'],
                                   'exchange' : stock['exchange'],
@@ -84,8 +94,12 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         if result.status_code == 200:
             data = result.content
             data = data.split('~')
-            return string.atof(data[len(data) - 5]) * 100000000
-        return 0.0
+            result = string.atof(data[len(data) - 5]) * 100000000
+            if not result:
+                logging.warn("Parse Market Capital Failure for %s" % (ticker))
+            return result
+        else:
+            logging.warn('Get Page Content Failure For %s' % (ticker))
         
     def __change_unit(self, symbol):
         symbol = symbol.encode('UTF-8')
@@ -111,8 +125,8 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         usd = self.request.get('usd')
         hkd = self.request.get('hkd')
         value = self.__get_page_content(ticker, exchange)
-        if value == 0:
-            value = self.__change_unit(self.request.get('value'))
+        #if value == 0:
+        #    value = self.__change_unit(self.request.get('value'))
         if local_currency_symbol.encode('UTF-8') == "￥":
             rate = 1
         elif local_currency_symbol == 'US$':
@@ -134,7 +148,7 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         entry.title = title
         entry.market_capital = market_capital
         entry.market_capital_date = datetime.date.today()
-        stock.put(entry)
+        stock.put(ticker, entry)
     
     def post(self):
         ticker = self.request.get('ticker')
@@ -142,7 +156,7 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         market_capital = self.__get_market_capital()
         self.__update_market_capital(market_capital)
         taskqueue.add(url='/tasks/updateearnings',
-                      queue_name=queue_name,
+                      queue_name='updateearnings',
                       params={'ticker' : ticker})
         
 
@@ -152,19 +166,23 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
             data = result.content
-        map = {}
-        lines = data.decode('GBK').encode('UTF-8').split('\n')
-        for line in lines:
-            fields = line.split('\t')
-            for i in range(len(fields) - 2):
-                if i + 1 not in map:
-                    map[i + 1] = {}
-                map[i + 1][fields[0]] = fields[i + 1]
-        results = {}
-        for k in map:
-            if '报表日期' in map[k]:
-                results[map[k]['报表日期']] = map[k]
-        return results
+            map = {}
+            lines = data.decode('GBK').encode('UTF-8').split('\n')
+            for line in lines:
+                fields = line.split('\t')
+                for i in range(len(fields) - 2):
+                    if i + 1 not in map:
+                        map[i + 1] = {}
+                    map[i + 1][fields[0]] = fields[i + 1]
+            results = {}
+            for k in map:
+                if '报表日期' in map[k]:
+                    results[map[k]['报表日期']] = map[k]
+            if not results:
+                raise BlankEarnings('Content is %s %s' % (result.content, result.headers))
+            return results
+        else:
+            logging.warn('Get Page Content Failure For %s' % (result.status_code))
     
     def __get_profit_earnings(self):
         ticker = self.request.get('ticker')
@@ -259,6 +277,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 break
         if earnings_date is None:
             logging.warn('There is no earnings date for %s' % (ticker))
+            logging.warn('profit: %s' % (repr(profit)))
+            logging.warn('balance: %s' % (repr(balance)))
             return
         else:
             try:
@@ -292,7 +312,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 bank_flag = True
                 entry.bank_flag = bank_flag
                 entry.earnings_date = earnings_date
-                stock.put(entry)
+                stock.put(ticker, entry)
                 logging.info("Firstly %s is a bank" % (ticker))
                 return
             entry.bank_flag = bank_flag
@@ -303,7 +323,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             entry.tangible_asset = tangible_asset
             entry.ownership_interest = ownership_interest
             entry.net_profit = net_profit
-            stock.put(entry)
+            stock.put(ticker, entry)
         
     def __get_recent_earnings_date(self, year, balance, profit):
         q4 = datetime.date(year=year, month=12, day=31)
