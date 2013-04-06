@@ -2,18 +2,18 @@ queue:
 - name: default
   rate: 5/s
   bucket_size: 5
-- name: queue0
-  rate: 5/s
+- name: updateallmarketcapital
+  rate: 1/s
   bucket_size: 5
-- name: queue1
-  rate: 5/s
+- name: updatemanymarketcapital
+  rate: 1/s
   bucket_size: 5
-- name: queue2
-  rate: 5/s
-  bucket_size: 5
-- name: queue3
-  rate: 5/s
-  bucket_size: 5
+- name: updatesinglemarketcapital
+  rate: 20/s
+  bucket_size: 20
+- name: updateearnings
+  rate: 20/s
+  bucket_size: 20
 - name: queue4
   rate: 5/s
   bucket_size: 5
