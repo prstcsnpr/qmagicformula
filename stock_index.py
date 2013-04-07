@@ -2,6 +2,7 @@
 
 
 import logging
+from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
@@ -62,8 +63,8 @@ class UpdateStockIndexHandler(webapp.RequestHandler):
         if not self.__equal(entry_old, entry_new):
             logging.info('It is on the exchange today')
             put(entry_new)
-            taskqueue.add(url='/tasks/updatemarketcapital',
-                          queue_name='updatemarketcapital',
+            taskqueue.add(url='/tasks/updatestockinfo',
+                          queue_name='updatestockinfo',
                           method='GET')
         else:
             logging.info('It is not on the exchange today')
