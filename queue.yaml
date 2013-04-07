@@ -14,8 +14,8 @@ queue:
 - name: updateearnings
   rate: 10/s
   bucket_size: 10
-- name: queue4
-  rate: 5/s
+- name: updatemarketcapital
+  rate: 1/s
   bucket_size: 5
 - name: queue5
   rate: 5/s
