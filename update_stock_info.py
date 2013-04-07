@@ -90,16 +90,22 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
             query = ''
             logging.warn('Error exchange: ' + exchange)
         url = "http://qt.gtimg.cn/S?q=" + query
+        value = 0.0
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
             data = result.content
             data = data.split('~')
-            result = string.atof(data[len(data) - 5]) * 100000000
+            try:
+                result = string.atof(data[len(data) - 5]) * 100000000
+            except ValueError as ve:
+                logging.warn('The value of %s is %s' % (ticker, data[len(data) - 5]))
+                logging.exception(ve)
             if not result:
                 logging.warn("Parse Market Capital Failure for %s" % (ticker))
-            return result
+            return value
         else:
             logging.warn('Get Page Content Failure For %s' % (ticker))
+            return value
         
     def __change_unit(self, symbol):
         symbol = symbol.encode('UTF-8')
@@ -125,8 +131,8 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         usd = self.request.get('usd')
         hkd = self.request.get('hkd')
         value = self.__get_page_content(ticker, exchange)
-        #if value == 0:
-        #    value = self.__change_unit(self.request.get('value'))
+        if value == 0:
+            value = self.__change_unit(self.request.get('value'))
         if local_currency_symbol.encode('UTF-8') == "￥":
             rate = 1
         elif local_currency_symbol == 'US$':
