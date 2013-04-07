@@ -16,19 +16,26 @@ class ShowStockInfoHandler(webapp.RequestHandler):
     def __filter(self, stocks):
         content = []
         results = []
+        miss = []
         for s in stocks:
             if s.market_capital == 0.0:
                 content.append("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
+                miss.append(s.ticker)
                 continue
             if s.bank_flag == True:
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
+                miss.append(s.ticker)
                 continue
             if s.earnings_date is None:
                 content.append("There is no earnings for %s %s\n" % (s.ticker, s.title))
+                miss.append(s.ticker)
                 continue
             if datetime.date.today().year - s.earnings_date.year > 2:
                 content.append("The earnings is too old for %s %s %s\n" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                miss.append(s.ticker)
                 continue
+            if s.market_capital_date != datetime.date.today():
+                content.append("The stock (%s, %s) is not in Google List\n" % (s.ticker, s.title))
             sv = stock.StockView()
             try:
                 sv.parse(s)
@@ -36,13 +43,13 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 content.append("Parse stock (%s, %s) has %s\n" % (s.ticker, s.title, e))
                 continue
             results.append(sv)
-        return (results, content)
+        return (results, content, miss)
             
     
     def __magicformula(self, stocks):
-        results, content = self.__filter(stocks)
+        results, content, miss = self.__filter(stocks)
         results = sorted(results, cmp=lambda a, b : stock.cmp_roic(a, b))
-        content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(content)))
+        content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(miss)))
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to="prstcsnpr@gmail.com",
                        subject="神奇公式执行结果",
