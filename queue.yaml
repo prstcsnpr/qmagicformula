@@ -17,8 +17,8 @@ queue:
 - name: updatestockinfo
   rate: 1/s
   bucket_size: 5
-- name: queue5
-  rate: 5/s
+- name: showstockinfo
+  rate: 1/s
   bucket_size: 5
 - name: queue6
   rate: 5/s
