@@ -29,17 +29,19 @@ class UpdateStockInfoHandler(webapp.RequestHandler):
     
     def get(self):
         taskqueue.add(url='/tasks/updateallmarketcapital',
-                      queue_name='updateallmarketcapital')
+                      queue_name='updateallmarketcapital',
+                      method='GET')
         print 'OK'
         
         
 class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
     
-    def post(self):
+    def get(self):
         for i in range(8):
             taskqueue.add(url='/tasks/updatemanymarketcapital',
                           queue_name='updatemanymarketcapital',
-                          params={'start' : str(i * 500)})
+                          params={'start' : str(i * 500)},
+                          method='GET')
         
         
 class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
@@ -47,7 +49,6 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
     def __get_page_content(self):
         start = self.request.get('start')
         url = 'https://www.google.com.hk/finance?output=json&start=' + start + '&num=500&noIL=1&q=[%28%28exchange%20%3D%3D%20%22SHE%22%29%20%7C%20%28exchange%20%3D%3D%20%22SHA%22%29%29%20%26%20%28market_cap%20%3E%3D%200%29%20%26%20%28market_cap%20%3C%3D%2010000000000000000%29]&restype=company&gl=cn'
-        logging.info(url)
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
             data = result.content
@@ -56,7 +57,7 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
             data = data.replace('\\x27','\'').replace('\\x2F','\/').replace('\\x3B',';')
             return data
         
-    def post(self):
+    def get(self):
         usd = exchange_rate.get().usd
         hkd = exchange_rate.get().hkd
         data = self.__get_page_content()
@@ -74,8 +75,8 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
                                   'local_currency_symbol' : stock['local_currency_symbol'],
                                   'value' : stock['columns'][0]['value'],
                                   'usd' : usd,
-                                  'hkd' : hkd,
-                                  'queue_name' : queue_name})
+                                  'hkd' : hkd},
+                          method='GET')
             count += 1
         
 
@@ -90,21 +91,18 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
             query = ''
             logging.warn('Error exchange: ' + exchange)
         url = "http://qt.gtimg.cn/S?q=" + query
-        value = 0.0
+        value = -1.0
         result = urlfetch.fetch(url=url)
         if result.status_code == 200:
             data = result.content
             data = data.split('~')
-            try:
-                result = string.atof(data[len(data) - 5]) * 100000000
-            except ValueError as ve:
-                logging.warn('The value of %s is %s' % (ticker, data[len(data) - 5]))
-                logging.exception(ve)
-            if not result:
-                logging.warn("Parse Market Capital Failure for %s" % (ticker))
-            return value
-        else:
-            logging.warn('Get Page Content Failure For %s' % (ticker))
+            logging.info('The market capital of %s is %s' % (ticker, data[len(data) - 5]))
+            if not data[len(data) - 5]:
+                logging.warn("There is no market capital for %s" % (ticker))
+                return -1.0
+            value = string.atof(data[len(data) - 5]) * 100000000
+            if not value:
+                logging.warn("The market capital of %s is 0" % (ticker))
             return value
         
     def __change_unit(self, symbol):
@@ -131,7 +129,7 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         usd = self.request.get('usd')
         hkd = self.request.get('hkd')
         value = self.__get_page_content(ticker, exchange)
-        if value == 0:
+        if value < 0:
             value = self.__change_unit(self.request.get('value'))
         if local_currency_symbol.encode('UTF-8') == "￥":
             rate = 1
@@ -156,14 +154,14 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         entry.market_capital_date = datetime.date.today()
         stock.put(ticker, entry)
     
-    def post(self):
+    def get(self):
         ticker = self.request.get('ticker')
-        queue_name = self.request.get('queue_name')
         market_capital = self.__get_market_capital()
         self.__update_market_capital(market_capital)
         taskqueue.add(url='/tasks/updateearnings',
                       queue_name='updateearnings',
-                      params={'ticker' : ticker})
+                      params={'ticker' : ticker},
+                      method='GET')
         
 
 class UpdateEarningsHandler(webapp.RequestHandler):
@@ -371,7 +369,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         else:
             return True
             
-    def post(self):
+    def get(self):
         if self.__need_update_earnings():
             ticker = self.request.get('ticker')
             logging.info('Update earnings for %s' % (ticker))
