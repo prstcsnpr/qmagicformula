@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import datetime
 import logging
 from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
@@ -17,6 +18,7 @@ class StockIndex(db.Model):
     sz_399300 = db.StringProperty(indexed=False)
     sz_399005 = db.StringProperty(indexed=False)
     sz_399006 = db.StringProperty(indexed=False)
+    index_date = db.DateProperty(indexed=False)
     
         
 def get():
@@ -26,6 +28,16 @@ def get():
 
 def put(entry):
     entry.put()
+    
+
+class ShowStockIndexHandler(webapp.RequestHandler):
+    
+    def get(self):
+        entry = get()
+        if entry.index_date == datetime.date.today():
+            taskqueue.add(url='/tasks/showstockinfo',
+                          queue_name='showstockinfo',
+                          method='GET')
     
     
 class UpdateStockIndexHandler(webapp.RequestHandler):
@@ -44,6 +56,7 @@ class UpdateStockIndexHandler(webapp.RequestHandler):
         entry.sz_399300 = self.__get_stock_index('399300.sz')
         entry.sz_399005 = self.__get_stock_index('399005.sz')
         entry.sz_399006 = self.__get_stock_index('399006.sz')
+        entry.index_date = datetime.date.today()
         return entry
     
     def __equal(self, old_index, new_index):
@@ -74,7 +87,8 @@ class UpdateStockIndexHandler(webapp.RequestHandler):
                            body='It is not on the exchange today')
             
             
-application = webapp.WSGIApplication([('/tasks/updatestockindex', UpdateStockIndexHandler)],
+application = webapp.WSGIApplication([('/tasks/updatestockindex', UpdateStockIndexHandler),
+                                      ('/tasks/showstockindex', ShowStockIndexHandler)],
                                      debug=True)
 
 
