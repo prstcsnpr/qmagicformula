@@ -13,26 +13,40 @@ import stock
     
 class ShowStockInfoHandler(webapp.RequestHandler):
     
-    def __magicformula(self, stocks):
+    def __filter(self, stocks):
+        content = []
         results = []
         for s in stocks:
             if s.market_capital == 0.0:
-                logging.warn("The market capital is 0 for %s %s" % (s.ticker, s.title))
+                content.append("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
                 continue
             if s.bank_flag == True:
-                logging.warn("The stock (%s, %s) is a bank" % (s.ticker, s.title))
+                content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
+                continue
+            if s.earnings_date is None:
+                content.append("There is no earnings for %s %s\n" % (s.ticker, s.title))
                 continue
             if datetime.date.today().year - s.earnings_date.year > 2:
-                logging.warn("The earnings is too old for %s %s %s" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                content.append("The earnings is too old for %s %s %s\n" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
                 continue
             sv = stock.StockView()
             try:
                 sv.parse(s)
             except Exception as e:
-                logging.exception("Parse stock (%s, %s) has %s" % (s.ticker, s.title, e))
+                content.append("Parse stock (%s, %s) has %s\n" % (s.ticker, s.title, e))
                 continue
             results.append(sv)
+        return (results, content)
+            
+    
+    def __magicformula(self, stocks):
+        results, content = self.__filter(stocks)
         results = sorted(results, cmp=lambda a, b : stock.cmp_roic(a, b))
+        content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(content)))
+        mail.send_mail(sender="prstcsnpr@gmail.com",
+                       to="prstcsnpr@gmail.com",
+                       subject="神奇公式执行结果",
+                       body=''.join(content))
         for i in range(len(results)):
             if i != 0 and stock.cmp_roic(results[i], results[i-1]) == 0:
                 results[i].roic_rank = results[i-1].roic_rank
@@ -68,7 +82,6 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
-        logging.info('No. of total stocks is %d' % (len(stocks)))
         pb, stocks = self.__magicformula(stocks)
         position=50
         while position<len(stocks):
