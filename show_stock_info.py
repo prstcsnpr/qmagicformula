@@ -79,11 +79,13 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         return p/b, results
     
     def __send_mail(self, content):
+        receiver="magicformula@googlegroups.com"
         mail.send_mail(sender="prstcsnpr@gmail.com",
-                       to="prstcsnpr@gmail.com",
+                       to=receiver,
                        subject="神奇公式",
                        body='',
                        html=content)
+        logging.info('Mail result for magicformula to %s' % (receiver))
             
     def get(self):
         values = {}
