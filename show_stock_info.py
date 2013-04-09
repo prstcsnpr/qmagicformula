@@ -17,13 +17,12 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         content = []
         results = []
         miss = []
+        p = 0.0
+        b = 0.0
+        e = 0.0
         for s in stocks:
             if s.market_capital == 0.0:
                 content.append("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
-                miss.append(s.ticker)
-                continue
-            if s.bank_flag == True:
-                content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
             if s.earnings_date is None:
@@ -32,6 +31,13 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 continue
             if datetime.date.today().year - s.earnings_date.year > 2:
                 content.append("The earnings is too old for %s %s %s\n" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                miss.append(s.ticker)
+                continue
+            p += s.market_capital
+            b += s.ownership_interest
+            e += s.net_profit
+            if s.bank_flag == True:
+                content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
             if s.market_capital_date != datetime.date.today():
@@ -43,11 +49,11 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 content.append("Parse stock (%s, %s) has %s\n" % (s.ticker, s.title, e))
                 continue
             results.append(sv)
-        return (results, content, miss)
+        return (results, content, miss, p/b, p/e)
             
     
     def __magicformula(self, stocks):
-        results, content, miss = self.__filter(stocks)
+        results, content, miss, pb, pe = self.__filter(stocks)
         results = sorted(results, cmp=lambda a, b : stock.cmp_roic(a, b))
         content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(miss)))
         mail.send_mail(sender="prstcsnpr@gmail.com",
@@ -66,17 +72,13 @@ class ShowStockInfoHandler(webapp.RequestHandler):
             else:
                 results[i].ebit_ev_rank = i + 1
         results = sorted(results, key=lambda stock : stock.roic_rank + stock.ebit_ev_rank)
-        p = 0.0
-        b = 0.0
         for i in range(len(results)):
             if i != 0 and results[i].roic_rank + results[i].ebit_ev_rank == results[i-1].roic_rank + results[i-1].ebit_ev_rank:
                 results[i].rank = results[i-1].rank
             else:
                 results[i].rank = i + 1
-            p += results[i].market_capital
-            b += results[i].ownership_interest
             results[i].format()
-        return p/b, results
+        return pb, pe, results
     
     def __send_mail(self, content):
         receiver="magicformula@googlegroups.com"
@@ -91,7 +93,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
-        pb, stocks = self.__magicformula(stocks)
+        pb, pe, stocks = self.__magicformula(stocks)
         position=50
         while position<len(stocks):
             if stocks[position].rank == stocks[position - 1].rank:
@@ -100,6 +102,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 break
         values['stocks'] = stocks[0 : position]
         values['PB'] = "%.4f" % (pb)
+        values['PE'] = "%.2f" % (pe)
         content = template.render('qmagicformula.html', values)
         self.response.write(content)
         self.__send_mail(content)
