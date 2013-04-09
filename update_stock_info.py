@@ -310,8 +310,22 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             except KeyError as ke:
                 logging.exception(ke)
                 bank_flag = True
+                if earnings_date.month == 12:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
+                    net_profit = string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
+                else:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
+                    last_year_date = datetime.date(year=earnings_date.year - 1, month=12, day=31).strftime('%Y%m%d')
+                    ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
+                    net_profit = (string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
+                                  + string.atof(profit[last_year_date]['归属于母公司的净利润'])
+                                  - string.atof(profit[last_earnings_date]['归属于母公司的净利润']))
                 entry.bank_flag = bank_flag
                 entry.earnings_date = earnings_date
+                entry.ownership_interest = ownership_interest
+                entry.net_profit = net_profit
                 stock.put(ticker, entry)
                 logging.info("Firstly %s is a bank" % (ticker))
                 return
