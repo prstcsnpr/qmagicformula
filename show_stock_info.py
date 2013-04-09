@@ -8,6 +8,7 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
+import gdp
 import stock
     
     
@@ -20,6 +21,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         p = 0.0
         b = 0.0
         e = 0.0
+        gdp_value = gdp.get().value
         for s in stocks:
             if s.market_capital == 0.0:
                 content.append("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
@@ -49,17 +51,16 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 content.append("Parse stock (%s, %s) has %s\n" % (s.ticker, s.title, e))
                 continue
             results.append(sv)
-        return (results, content, miss, p/b, p/e)
-            
-    
-    def __magicformula(self, stocks):
-        results, content, miss, pb, pe = self.__filter(stocks)
-        results = sorted(results, cmp=lambda a, b : stock.cmp_roic(a, b))
         content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(miss)))
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to="prstcsnpr@gmail.com",
                        subject="神奇公式执行结果",
                        body=''.join(content))
+        return (results, p / b, p / e, p * 100 / gdp_value)
+            
+    
+    def __magicformula(self, stocks):
+        results = sorted(stocks, cmp=lambda a, b : stock.cmp_roic(a, b))
         for i in range(len(results)):
             if i != 0 and stock.cmp_roic(results[i], results[i-1]) == 0:
                 results[i].roic_rank = results[i-1].roic_rank
@@ -78,10 +79,11 @@ class ShowStockInfoHandler(webapp.RequestHandler):
             else:
                 results[i].rank = i + 1
             results[i].format()
-        return pb, pe, results
+        return results
     
     def __send_mail(self, content):
         receiver="magicformula@googlegroups.com"
+        #receiver="prstcsnpr@gmail.com"
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to=receiver,
                        subject="神奇公式",
@@ -93,7 +95,8 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
-        pb, pe, stocks = self.__magicformula(stocks)
+        stocks, pb, pe, mc_gdp = self.__filter(stocks)
+        stocks = self.__magicformula(stocks)
         position=50
         while position<len(stocks):
             if stocks[position].rank == stocks[position - 1].rank:
@@ -103,6 +106,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         values['stocks'] = stocks[0 : position]
         values['PB'] = "%.4f" % (pb)
         values['PE'] = "%.2f" % (pe)
+        values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('qmagicformula.html', values)
         self.response.write(content)
         self.__send_mail(content)
