@@ -37,6 +37,10 @@ handlers:
   script: stock_index.py
   login: admin
   
+- url: /tasks/updategdp
+  script: gdp.py
+  login: admin
+  
 - url: /tasks/showstockindex
   script: stock_index.py
   login: admin
