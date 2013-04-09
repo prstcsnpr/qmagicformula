@@ -277,8 +277,6 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 break
         if earnings_date is None:
             logging.warn('There is no earnings date for %s' % (ticker))
-            logging.warn('profit: %s' % (repr(profit)))
-            logging.warn('balance: %s' % (repr(balance)))
             return
         else:
             try:
@@ -344,7 +342,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         q3 = datetime.date(year=year, month=9, day=30)
         q2 = datetime.date(year=year, month=6, day=30)
         q1 = datetime.date(year=year, month=3, day=31)
-        last_year= year - 1
+        last_year = year - 1
         if q4.strftime('%Y%m%d') in balance and q4.strftime('%Y%m%d') in profit:
             return q4
         elif q4.replace(year=last_year).strftime('%Y%m%d') in balance and q4.replace(year=last_year).strftime('%Y%m%d') in profit:
