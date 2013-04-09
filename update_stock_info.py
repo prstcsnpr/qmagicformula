@@ -199,62 +199,61 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         return self.__get_page_content(url)
     
     def __get_ebit(self, profit):
-        operating_income = string.atof(profit['营业收入'])
-        operating_costs = string.atof(profit['营业成本'])
-        business_tax_and_additional = string.atof(profit['营业税金及附加'])
-        management_expenses = string.atof(profit['管理费用'])
+        income_from_main = string.atof(profit['营业收入'])
+        cost_of_main_operation = string.atof(profit['营业成本'])
+        tax_and_additional_expense = string.atof(profit['营业税金及附加'])
+        general_and_administrative_expense = string.atof(profit['管理费用'])
         sales_expenses = string.atof(profit['销售费用'])
         investment_income = string.atof(profit['其中:对联营企业和合营企业的投资收益'])
-        ebit = (operating_income - operating_costs - business_tax_and_additional - management_expenses - sales_expenses + investment_income)
+        ebit = (income_from_main - cost_of_main_operation - tax_and_additional_expense - general_and_administrative_expense - sales_expenses + investment_income)
         return ebit
     
     def __get_income(self, profit):
-        operating_income = string.atof(profit['营业收入'])
-        operating_costs = string.atof(profit['营业成本'])
-        business_tax_and_additional = string.atof(profit['营业税金及附加'])
-        management_expenses = string.atof(profit['管理费用'])
+        income_from_main = string.atof(profit['营业收入'])
+        cost_of_main_operation = string.atof(profit['营业成本'])
+        tax_and_additional_expense = string.atof(profit['营业税金及附加'])
+        general_and_administrative_expense = string.atof(profit['管理费用'])
         sales_expenses = string.atof(profit['销售费用'])
-        investment_income = string.atof(profit['其中:对联营企业和合营企业的投资收益'])
-        income = (operating_income - operating_costs - business_tax_and_additional - management_expenses - sales_expenses)
+        income = (income_from_main - cost_of_main_operation - tax_and_additional_expense - general_and_administrative_expense - sales_expenses)
         return income
     
     def __get_enterprise_value(self, balance):
-        current_assets = string.atof(balance['流动资产合计'])
+        current_asset = string.atof(balance['流动资产合计'])
         current_liabilities = string.atof(balance['流动负债合计'])
-        short_term_borrowing = string.atof(balance['短期借款'])
+        short_term_loans = string.atof(balance['短期借款'])
         notes_payable = string.atof(balance['应付票据'])
         a_maturity_of_non_current_liabilities = string.atof(balance['一年内到期的非流动负债'])
         cope_with_short_term_bond = string.atof(balance['应付短期债券'])
         monetary_fund = string.atof(balance['货币资金'])
-        long_term_borrowing = string.atof(balance['长期借款'])
+        long_term_loans = string.atof(balance['长期借款'])
         bonds_payable = string.atof(balance['应付债券'])
         minority_equity = string.atof(balance['少数股东权益'])
         available_for_sale_financial_assets = string.atof(balance['可供出售金融资产'])
         hold_expires_investment = string.atof(balance['持有至到期投资'])
         delay_income_tax_liabilities = string.atof(balance['递延所得税负债'])
-        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_assets + monetary_fund))
-        enterprise_value = (short_term_borrowing + notes_payable + a_maturity_of_non_current_liabilities
-                            + cope_with_short_term_bond + long_term_borrowing
+        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_asset + monetary_fund))
+        enterprise_value = (short_term_loans + notes_payable + a_maturity_of_non_current_liabilities
+                            + cope_with_short_term_bond + long_term_loans
                             + bonds_payable + minority_equity
                             - available_for_sale_financial_assets - hold_expires_investment
                             + delay_income_tax_liabilities - excess_cash)
         return enterprise_value
     
     def __get_tangible_asset(self, balance):
-        current_assets = string.atof(balance['流动资产合计'])
+        current_asset = string.atof(balance['流动资产合计'])
         current_liabilities = string.atof(balance['流动负债合计'])
-        short_term_borrowing = string.atof(balance['短期借款'])
+        short_term_loans = string.atof(balance['短期借款'])
         notes_payable = string.atof(balance['应付票据'])
         a_maturity_of_non_current_liabilities = string.atof(balance['一年内到期的非流动负债'])
         cope_with_short_term_bond = string.atof(balance['应付短期债券'])
-        net_value_of_fixed_assets = string.atof(balance['固定资产净值'])
+        fixed_assets_net_value = string.atof(balance['固定资产净值'])
         investment_real_estate = string.atof(balance['投资性房地产'])
         monetary_fund = string.atof(balance['货币资金'])
-        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_assets + monetary_fund))
-        tangible_asset = (current_assets - current_liabilities
-                          + short_term_borrowing + notes_payable
+        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_asset + monetary_fund))
+        tangible_asset = (current_asset - current_liabilities
+                          + short_term_loans + notes_payable
                           + a_maturity_of_non_current_liabilities
-                          + cope_with_short_term_bond + net_value_of_fixed_assets
+                          + cope_with_short_term_bond + fixed_assets_net_value
                           + investment_real_estate - excess_cash)
         return tangible_asset
     
@@ -263,8 +262,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         return net_profit
     
     def __get_ownership_interest(self, balance):
-        ownership_interest = string.atof(balance['所有者权益(或股东权益)合计'])
-        return ownership_interest
+        total_owner_s_equity = string.atof(balance['所有者权益(或股东权益)合计'])
+        return total_owner_s_equity
         
     def __update_earnings(self):
         ticker = self.request.get('ticker')
