@@ -29,7 +29,7 @@ handlers:
   script: exchange_rate.py
   login: admin
   
-- url: /tasks/showstockinfo
+- url: /tasks/.*formula
   script: show_stock_info.py
   login: admin
   
