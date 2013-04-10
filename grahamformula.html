@@ -1,0 +1,37 @@
+<table border="1" style="color:white">
+	<tr bgcolor="black">
+		<td align="center">PB</td>
+		<td align="center">PE</td>
+		<td align="center">Market Cap / GDP</td>
+	</tr>
+	<tr bgcolor="black">
+		<td align="center">{{PB}}</td>
+		<td align="center">{{PE}}</td>
+		<td align="center">{{MCGDP}}</td>
+	</tr>
+</table>
+<br>
+<table border="1" style="color:white">
+	<tr bgcolor="blue">
+		<th>Code</th>
+		<th>Name</th>
+		<th>Market Cap</th>
+		<th>Debt Asset Rto.</th>
+		<th>PE</th>
+		<th>PB</th>
+		<th>ROE</th>
+		<th>Earnings Date</th>
+	</tr>
+	{% for s in stocks %}
+	<tr bgcolor="{{ s.color }}">
+		<td align="center">{{ s.ticker }}</td>
+		<td align="center">{{ s.title }}</td>
+		<td align="right">{{ s.market_capital }}</td>
+		<td align="right">{{s.debt_asset_ratio}}</td>
+		<td align="right">{{ s.pe }}</td>
+		<td align="right">{{ s.pb }}</td>
+		<td align="right">{{ s.roe }}</td>
+		<td align="center">{{ s.earnings_date }}</td>
+	</tr>
+	{% endfor %}
+</table>
