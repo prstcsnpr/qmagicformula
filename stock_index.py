@@ -35,8 +35,11 @@ class ShowStockIndexHandler(webapp.RequestHandler):
     def get(self):
         entry = get()
         if entry.index_date == datetime.date.today():
-            taskqueue.add(url='/tasks/showstockinfo',
-                          queue_name='showstockinfo',
+            taskqueue.add(url='/tasks/magicformula',
+                          queue_name='formula',
+                          method='GET')
+            taskqueue.add(url='/tasks/grahamformula',
+                          queue_name='formula',
                           method='GET')
     
     
