@@ -49,8 +49,8 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         return (results, p / b, p / net_profit, p * 100 / gdp_value)
     
     def __send_mail(self, content):
-        #receiver="magicformula@googlegroups.com"
-        receiver="prstcsnpr@gmail.com"
+        receiver="magicformula@googlegroups.com"
+        #receiver="prstcsnpr@gmail.com"
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to=receiver,
                        subject="格雷厄姆公式",
@@ -141,8 +141,8 @@ class MagicFormulaHandler(webapp.RequestHandler):
         return results
     
     def __send_mail(self, content):
-        #receiver="magicformula@googlegroups.com"
-        receiver="prstcsnpr@gmail.com"
+        receiver="magicformula@googlegroups.com"
+        #receiver="prstcsnpr@gmail.com"
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to=receiver,
                        subject="神奇公式",
