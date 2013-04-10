@@ -17,10 +17,53 @@ class Stock(db.Model):
     tangible_asset = db.FloatProperty(indexed=False)
     ownership_interest = db.FloatProperty(indexed=False)
     net_profit = db.FloatProperty(indexed=False)
+    total_assets = db.FloatProperty(indexed=False)
     earnings_date = db.DateProperty(indexed=False)
+   
     
+class GrahamFormulaStockView(object):
     
-class StockView(object):
+    def __init__(self):
+        self.rank = 0
+        self.ticker = ''
+        self.title = ''
+        self.market_capital = 0.0
+        self.net_profit = 0.0
+        self.ownership_interest = 0.0
+        self.total_assets = 0.0
+        self.earnings_date = None
+        self.pe = 0.0
+        self.pb = 0.0
+        self.roe = 0.0
+        self.debt_asset_ratio = 0.0
+        self.color = ""
+        
+    def format(self):
+        if self.roe >= 15 and self.pe <= 15 and self.pe > 0:
+            self.color = "#119911"
+        else:
+            self.color = "#991111"
+        self.market_capital = "%.2f亿" % (self.market_capital / 100000000)
+        self.roe = "%.1f%%" % (self.roe)
+        self.pe = "%.1f" % (self.pe)
+        self.pb = "%.1f" % (self.pb)
+        self.debt_asset_ratio = "%.1f%%" % (self.debt_asset_ratio)
+        self.earnings_date = self.earnings_date.strftime("%Y%m%d")
+            
+    def parse(self, s):
+        self.ticker = s.ticker
+        self.title = s.title
+        self.market_capital = s.market_capital
+        self.net_profit = s.net_profit
+        self.ownership_interest = s.ownership_interest
+        self.total_assets = s.total_assets
+        self.earnings_date = s.earnings_date
+        self.pe = self.market_capital / self.net_profit
+        self.pb = self.market_capital / self.ownership_interest
+        self.roe = self.net_profit * 100 / self.ownership_interest
+        self.debt_asset_ratio = (self.total_assets - self.ownership_interest) * 100 / self.total_assets
+    
+class MagicFormulaStockView(object):
     
     def __init__(self):
         self.rank = 0
@@ -37,14 +80,16 @@ class StockView(object):
         self.enterprise_value = 0.0
         self.net_profit = 0.0
         self.ownership_interest = 0.0
+        self.total_assets = 0.0
         self.earnings_date = None
         self.pe = 0.0
         self.pb = 0.0
         self.roe = 0.0
+        self.debt_asset_ratio = 0.0
         self.color = ""
         
     def format(self):
-        if self.roe >= 15 and self.pe <=15:
+        if self.roe >= 15:
             self.color = "#119911"
         else:
             self.color = "#991111"
@@ -60,6 +105,7 @@ class StockView(object):
         self.roe = "%.1f%%" % (self.roe)
         self.pe = "%.1f" % (self.pe)
         self.pb = "%.1f" % (self.pb)
+        self.debt_asset_ratio = "%.1f%%" % (self.debt_asset_ratio)
         self.earnings_date = self.earnings_date.strftime("%Y%m%d")
             
     def parse(self, s):
@@ -72,10 +118,12 @@ class StockView(object):
         self.enterprise_value = s.enterprise_value + s.market_capital
         self.net_profit = s.net_profit
         self.ownership_interest = s.ownership_interest
+        self.total_assets = s.total_assets
         self.earnings_date = s.earnings_date
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
+        self.debt_asset_ratio = self.total_assets * 100 / self.ownership_interest
         if self.tangible_asset != 0.0:
             self.roic = self.income / self.tangible_asset
         else:
