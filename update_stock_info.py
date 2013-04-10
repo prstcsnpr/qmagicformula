@@ -264,6 +264,10 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __get_ownership_interest(self, balance):
         total_owner_s_equity = string.atof(balance['所有者权益(或股东权益)合计'])
         return total_owner_s_equity
+    
+    def __get_total_assets(self, balance):
+        total_assets = string.atof(balance['资产总计'])
+        return total_assets
         
     def __update_earnings(self):
         ticker = self.request.get('ticker')
@@ -289,6 +293,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     tangible_asset = self.__get_tangible_asset(balance[this_earnings_date])
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
                     net_profit = self.__get_net_profit(profit[this_earnings_date])
+                    total_assets = self.__get_total_assets(balance[this_earnings_date])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
@@ -296,6 +301,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     enterprise_value = self.__get_enterprise_value(balance[this_earnings_date])
                     tangible_asset = self.__get_tangible_asset(balance[this_earnings_date])
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
+                    total_assets = self.__get_total_assets(balance[this_earnings_date])
                     ebit = (self.__get_ebit(profit[this_earnings_date]) 
                             + self.__get_ebit(profit[last_year_date]) 
                             - self.__get_ebit(profit[last_earnings_date]))
@@ -312,11 +318,13 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
                     net_profit = string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
+                    total_assets = string.atof(balance[this_earnings_date]['资产总计'])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
                     last_year_date = datetime.date(year=earnings_date.year - 1, month=12, day=31).strftime('%Y%m%d')
                     ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
+                    total_assets = string.atof(balance[this_earnings_date]['资产总计'])
                     net_profit = (string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
                                   + string.atof(profit[last_year_date]['归属于母公司的净利润'])
                                   - string.atof(profit[last_earnings_date]['归属于母公司的净利润']))
@@ -324,6 +332,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 entry.earnings_date = earnings_date
                 entry.ownership_interest = ownership_interest
                 entry.net_profit = net_profit
+                entry.total_assets = total_assets
                 stock.put(ticker, entry)
                 logging.info("Firstly %s is a bank" % (ticker))
                 return
@@ -335,6 +344,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             entry.tangible_asset = tangible_asset
             entry.ownership_interest = ownership_interest
             entry.net_profit = net_profit
+            entry.total_assets = total_assets
             stock.put(ticker, entry)
         
     def __get_recent_earnings_date(self, year, balance, profit):
@@ -356,35 +366,10 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 return None
         else:
             return None
-        
-    def __need_update_earnings(self):
-        ticker = self.request.get('ticker')
-        entry = stock.get(ticker)
-        earnings_date = entry.earnings_date
-        if earnings_date is None:
-            return True
-        today = datetime.date.today()
-        logging.info(str(today)+' '+str(earnings_date))
-        if (today.month <= 3 and today.month >= 1
-            and earnings_date.month == 12 and earnings_date.year + 1 == today.year):
-            return False
-        elif (today.month <= 6 and today.month >= 4
-              and earnings_date.month == 3 and earnings_date.year == today.year):
-            return False
-        elif (today.month <= 9 and today.month >= 7
-              and earnings_date.month == 6 and earnings_date.year == today.year):
-            return False
-        elif (today.month <= 12 and today.month >= 10
-              and earnings_date.month == 9 and earnings_date.year == today.year):
-            return False
-        else:
-            return True
             
     def get(self):
-        if self.__need_update_earnings():
-            ticker = self.request.get('ticker')
-            logging.info('Update earnings for %s' % (ticker))
-            self.__update_earnings()
+        ticker = self.request.get('ticker')
+        self.__update_earnings()
         
 application = webapp.WSGIApplication([('/tasks/updatestockinfo', UpdateStockInfoHandler),
                                       ('/tasks/updatemanymarketcapital', UpdateManyMarketCapitalHandler),
