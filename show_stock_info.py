@@ -10,9 +10,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 import gdp
 import stock
-    
-    
-class ShowStockInfoHandler(webapp.RequestHandler):
+
+
+class GrahamFormulaHandler(webapp.RequestHandler):
     
     def __filter(self, stocks):
         content = []
@@ -20,7 +20,66 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         miss = []
         p = 0.0
         b = 0.0
-        e = 0.0
+        net_profit = 0.0
+        gdp_value = gdp.get().value
+        for s in stocks:
+            if s.market_capital == 0.0:
+                logging.warn("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
+                continue
+            if s.earnings_date is None:
+                logging.warn("There is no earnings for %s %s\n" % (s.ticker, s.title))
+                continue
+            if datetime.date.today().year - s.earnings_date.year > 2:
+                logging.warn("The earnings is too old for %s %s %s\n" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                continue
+            p += s.market_capital
+            b += s.ownership_interest
+            net_profit += s.net_profit
+            if s.market_capital_date != datetime.date.today():
+                logging.warn("The stock (%s, %s) is not in Google List\n" % (s.ticker, s.title))
+            sv = stock.GrahamFormulaStockView()
+            try:
+                sv.parse(s)
+            except Exception as e:
+                logging.warn("Parse stock (%s, %s) for %s\n" % (s.ticker, s.title, e))
+                continue
+            if sv.pe <= 10 and sv.pe > 0 and sv.debt_asset_ratio <= 50:
+                sv.format()
+                results.append(sv)
+        return (results, p / b, p / net_profit, p * 100 / gdp_value)
+    
+    def __send_mail(self, content):
+        #receiver="magicformula@googlegroups.com"
+        receiver="prstcsnpr@gmail.com"
+        mail.send_mail(sender="prstcsnpr@gmail.com",
+                       to=receiver,
+                       subject="格雷厄姆公式",
+                       body='',
+                       html=content)
+        logging.info('Mail result for grahamformula to %s' % (receiver))
+            
+    def get(self):
+        values = {}
+        query = db.Query(stock.Stock)
+        stocks = query.fetch(10000)
+        stocks, pb, pe, mc_gdp = self.__filter(stocks)
+        values['stocks'] = stocks[0 : len(stocks)]
+        values['PB'] = "%.4f" % (pb)
+        values['PE'] = "%.2f" % (pe)
+        values['MCGDP'] = "%.0f%%" % (mc_gdp)
+        content = template.render('grahamformula.html', values)
+        self.response.write(content)
+        self.__send_mail(content)
+    
+class MagicFormulaHandler(webapp.RequestHandler):
+    
+    def __filter(self, stocks):
+        content = []
+        results = []
+        miss = []
+        p = 0.0
+        b = 0.0
+        net_profit = 0.0
         gdp_value = gdp.get().value
         for s in stocks:
             if s.market_capital == 0.0:
@@ -37,18 +96,18 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                 continue
             p += s.market_capital
             b += s.ownership_interest
-            e += s.net_profit
+            net_profit += s.net_profit
             if s.bank_flag == True:
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
             if s.market_capital_date != datetime.date.today():
                 content.append("The stock (%s, %s) is not in Google List\n" % (s.ticker, s.title))
-            sv = stock.StockView()
+            sv = stock.MagicFormulaStockView()
             try:
                 sv.parse(s)
             except Exception as e:
-                content.append("Parse stock (%s, %s) has %s\n" % (s.ticker, s.title, e))
+                content.append("Parse stock (%s, %s) for %s %s\n" % (s.ticker, s.title, e, repr(s)))
                 continue
             results.append(sv)
         content.append("Total: %s, Sorted: %s Miss: %s" % (len(stocks), len(results), len(miss)))
@@ -56,7 +115,7 @@ class ShowStockInfoHandler(webapp.RequestHandler):
                        to="prstcsnpr@gmail.com",
                        subject="神奇公式执行结果",
                        body=''.join(content))
-        return (results, p / b, p / e, p * 100 / gdp_value)
+        return (results, p / b, p / net_profit, p * 100 / gdp_value)
             
     
     def __magicformula(self, stocks):
@@ -82,8 +141,8 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         return results
     
     def __send_mail(self, content):
-        receiver="magicformula@googlegroups.com"
-        #receiver="prstcsnpr@gmail.com"
+        #receiver="magicformula@googlegroups.com"
+        receiver="prstcsnpr@gmail.com"
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to=receiver,
                        subject="神奇公式",
@@ -113,7 +172,8 @@ class ShowStockInfoHandler(webapp.RequestHandler):
         
             
         
-application = webapp.WSGIApplication([('/tasks/showstockinfo', ShowStockInfoHandler)],
+application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
+                                      ('/tasks/grahamformula', GrahamFormulaHandler)],
                                      debug=True)
 
 
