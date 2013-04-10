@@ -17,7 +17,7 @@ queue:
 - name: updatestockinfo
   rate: 1/s
   bucket_size: 5
-- name: showstockinfo
+- name: formula
   rate: 1/s
   bucket_size: 5
 - name: queue6
