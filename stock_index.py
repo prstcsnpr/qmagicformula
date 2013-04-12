@@ -74,20 +74,26 @@ class UpdateStockIndexHandler(webapp.RequestHandler):
             return False
         
     def get(self):
-        entry_old = get()
-        entry_new = self.__get_stock_indexes()
-        if not self.__equal(entry_old, entry_new):
-            logging.info('It is on the exchange today')
-            put(entry_new)
-            taskqueue.add(url='/tasks/updatestockinfo',
-                          queue_name='updatestockinfo',
+        try:
+            entry_old = get()
+            entry_new = self.__get_stock_indexes()
+            if not self.__equal(entry_old, entry_new):
+                logging.info('It is on the exchange today')
+                put(entry_new)
+                taskqueue.add(url='/tasks/updatestockinfo',
+                              queue_name='updatestockinfo',
+                              method='GET')
+            else:
+                logging.info('It is not on the exchange today')
+                mail.send_mail(sender="prstcsnpr@gmail.com",
+                               to="prstcsnpr@gmail.com",
+                               subject="神奇公式",
+                               body='It is not on the exchange today')
+        except DownloadError as de:
+            logging.exception(de)
+            taskqueue.add(url='/tasks/updatestockindex',
+                          queue_name='updatestockindex',
                           method='GET')
-        else:
-            logging.info('It is not on the exchange today')
-            mail.send_mail(sender="prstcsnpr@gmail.com",
-                           to="prstcsnpr@gmail.com",
-                           subject="神奇公式",
-                           body='It is not on the exchange today')
             
             
 application = webapp.WSGIApplication([('/tasks/updatestockindex', UpdateStockIndexHandler),
