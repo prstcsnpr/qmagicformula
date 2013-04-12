@@ -20,8 +20,8 @@ queue:
 - name: formula
   rate: 1/s
   bucket_size: 5
-- name: queue6
-  rate: 5/s
+- name: updatestockindex
+  rate: 1/s
   bucket_size: 5
 - name: queue7
   rate: 5/s
