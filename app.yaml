@@ -9,15 +9,7 @@ handlers:
   script: update_stock_info.py
   login: admin
 
-- url: /tasks/updateallmarketcapital
-  script: update_stock_info.py
-  login: admin
-  
-- url: /tasks/updatemanymarketcapital
-  script: update_stock_info.py
-  login: admin
-
-- url: /tasks/updatesinglemarketcapital
+- url: /tasks/update.*marketcapital
   script: update_stock_info.py
   login: admin
 
@@ -43,6 +35,10 @@ handlers:
   
 - url: /tasks/showstockindex
   script: stock_index.py
+  login: admin
+  
+- url: /tasks/update.*categoryinfo
+  script: update_category_info.py
   login: admin
   
 - url: /
