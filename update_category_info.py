@@ -3,6 +3,7 @@
 
 import logging
 import string
+from google.appengine.api.labs import taskqueue
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 import stock
@@ -11,15 +12,37 @@ import stock
 class UpdateCategoryInfoHandler(webapp.RequestHandler):
 
     def get(self):
+        taskqueue.add(url='/tasks/updateallcategoryinfo',
+                      queue_name='updateallcategoryinfo',
+                      method='GET')
+        
+        
+class UpdateAllCategoryInfoHandler(webapp.RequestHandler):
+    
+    def get(self):
         with open('category') as file:
             for line in file.readlines():
                 fields = line.split()
-                entry = stock.get(fields[0])
-                entry.categories.append(fields[1])
-                stock.put(fields[0], entry)
+                taskqueue.add(url='/tasks/updatesinglecategoryinfo',
+                              queue_name='updatesinglecategoryinfo',
+                              method='GET',
+                              params={'ticker' : fields[0],
+                                      'category' : fields[1]})
+                
+                
+class UpdateSingleCategoryInfoHandler(webapp.RequestHandler):
+    
+    def get(self):
+        ticker = self.request.get('ticker')
+        category = self.request.get('category')
+        entry = stock.get(ticker)
+        entry.category = category
+        stock.put(ticker, entry)
         
         
-application = webapp.WSGIApplication([('/tasks/updatecategoryinfo', UpdateCategoryInfoHandler)],
+application = webapp.WSGIApplication([('/tasks/updatecategoryinfo', UpdateCategoryInfoHandler),
+                                      ('/tasks/updateallcategoryinfo', UpdateAllCategoryInfoHandler),
+                                      ('/tasks/updatesinglecategoryinfo', UpdateSingleCategoryInfoHandler)],
                                      debug=True)
 
 
