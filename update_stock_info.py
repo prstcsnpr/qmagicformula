@@ -31,7 +31,6 @@ class UpdateStockInfoHandler(webapp.RequestHandler):
         taskqueue.add(url='/tasks/updateallmarketcapital',
                       queue_name='updateallmarketcapital',
                       method='GET')
-        print 'OK'
         
         
 class UpdateAllMarketCapitalHandler(webapp.RequestHandler):
