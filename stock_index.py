@@ -7,6 +7,7 @@ from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
+from google.appengine.api.urlfetch_errors import DownloadError
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
