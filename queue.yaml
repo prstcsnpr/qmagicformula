@@ -27,8 +27,8 @@ queue:
   rate: 1/s
   bucket_size: 5
 - name: updatesinglecategoryinfo
-  rate: 5/s
-  bucket_size: 5
+  rate: 20/s
+  bucket_size: 20
 - name: queue9
   rate: 5/s
   bucket_size: 5
