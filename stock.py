@@ -19,7 +19,7 @@ class Stock(db.Model):
     net_profit = db.FloatProperty(indexed=False)
     total_assets = db.FloatProperty(indexed=False)
     earnings_date = db.DateProperty(indexed=False)
-    categories = db.StringListProperty(indexed=False)
+    category = db.StringProperty(indexed=False)
    
     
 class GrahamFormulaStockView(object):
