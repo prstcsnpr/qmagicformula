@@ -24,7 +24,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         gdp_value = gdp.get().value
         for s in stocks:
             if s.ticker[0] == '2' or s.ticker[0] == '9':
-                logging.warn("%s %s is B Stock" % (s.ticker, s.title))
+                logging.warn("%s %s is B Stock\n" % (s.ticker, s.title))
                 continue
             if s.market_capital == 0.0:
                 logging.warn("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
@@ -86,7 +86,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         gdp_value = gdp.get().value
         for s in stocks:
             if s.ticker[0] == '2' or s.ticker[0] == '9':
-                content.append("%s %s is B Stock" % (s.ticker, s.title))
+                content.append("%s %s is B Stock\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
             if s.market_capital == 0.0:
