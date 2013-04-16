@@ -34,13 +34,19 @@ def put(entry):
 class ShowStockIndexHandler(webapp.RequestHandler):
     
     def get(self):
-        entry = get()
-        if entry.index_date == datetime.date.today():
-            taskqueue.add(url='/tasks/magicformula',
-                          queue_name='formula',
-                          method='GET')
-            taskqueue.add(url='/tasks/grahamformula',
-                          queue_name='formula',
+        try:
+            entry = get()
+            if entry.index_date == datetime.date.today():
+                taskqueue.add(url='/tasks/magicformula',
+                              queue_name='formula',
+                              method='GET')
+                taskqueue.add(url='/tasks/grahamformula',
+                              queue_name='formula',
+                              method='GET')
+        except Exception as e:
+            logging.exception(e)
+            taskqueue.add(url='/tasks/showstockindex',
+                          queue_name='showstockindex',
                           method='GET')
     
     
@@ -90,8 +96,8 @@ class UpdateStockIndexHandler(webapp.RequestHandler):
                                to="prstcsnpr@gmail.com",
                                subject="神奇公式",
                                body='It is not on the exchange today')
-        except DownloadError as de:
-            logging.exception(de)
+        except Exception as e:
+            logging.exception(e)
             taskqueue.add(url='/tasks/updatestockindex',
                           queue_name='updatestockindex',
                           method='GET')
