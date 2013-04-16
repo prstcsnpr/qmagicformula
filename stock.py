@@ -32,6 +32,7 @@ class GrahamFormulaStockView(object):
         self.net_profit = 0.0
         self.ownership_interest = 0.0
         self.total_assets = 0.0
+        self.category = ""
         self.earnings_date = None
         self.pe = 0.0
         self.pb = 0.0
@@ -59,6 +60,7 @@ class GrahamFormulaStockView(object):
         self.ownership_interest = s.ownership_interest
         self.total_assets = s.total_assets
         self.earnings_date = s.earnings_date
+        self.category = s.category
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
@@ -82,6 +84,7 @@ class MagicFormulaStockView(object):
         self.net_profit = 0.0
         self.ownership_interest = 0.0
         self.total_assets = 0.0
+        self.category = ""
         self.earnings_date = None
         self.pe = 0.0
         self.pb = 0.0
@@ -121,6 +124,7 @@ class MagicFormulaStockView(object):
         self.ownership_interest = s.ownership_interest
         self.total_assets = s.total_assets
         self.earnings_date = s.earnings_date
+        self.category = s.category
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
