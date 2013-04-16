@@ -29,6 +29,6 @@ queue:
 - name: updatesinglecategoryinfo
   rate: 20/s
   bucket_size: 20
-- name: queue9
-  rate: 5/s
+- name: updategdp
+  rate: 1/s
   bucket_size: 5
