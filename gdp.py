@@ -109,8 +109,8 @@ class UpdateGDPHandler(webapp.RequestHandler):
                 return (string.atof(parser.map[this_gdp_date]) * 100000000, recent_gdp_date)
             else:
                 this_gdp_date = recent_gdp_date.strftime('%Y%m%d')
-                last_gdp_date = recent_gdp_date.replace(recent_gdp_date.year - 1)
-                last_year_date = datetime.date(recent_gdp_date.year - 1, 12, 31)
+                last_gdp_date = recent_gdp_date.replace(recent_gdp_date.year - 1).strftime('%Y%m%d')
+                last_year_date = datetime.date(recent_gdp_date.year - 1, 12, 31).strftime('%Y%m%d')
                 return ((string.atof(parser.map[this_gdp_date])
                         + string.atof(parser.map[last_year_date])
                         - string.atof(parser.map[last_gdp_date]))
