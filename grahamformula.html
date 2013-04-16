@@ -21,6 +21,7 @@
 		<th>PB</th>
 		<th>ROE</th>
 		<th>Earnings Date</th>
+		<th>Category</th>
 	</tr>
 	{% for s in stocks %}
 	<tr bgcolor="{{ s.color }}">
@@ -32,6 +33,7 @@
 		<td align="right">{{ s.pb }}</td>
 		<td align="right">{{ s.roe }}</td>
 		<td align="center">{{ s.earnings_date }}</td>
+		<td align="center">{{ s.category }}</td>
 	</tr>
 	{% endfor %}
 </table>
