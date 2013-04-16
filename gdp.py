@@ -5,6 +5,7 @@ import datetime
 from HTMLParser import HTMLParser
 import logging
 import string
+from google.appengine.api.labs import taskqueue
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
@@ -117,11 +118,17 @@ class UpdateGDPHandler(webapp.RequestHandler):
                         * 100000000, recent_gdp_date)
             
     def get(self):
-        value, date = self.__get_gdp()
-        entry = get()
-        entry.value = value
-        entry.date = date
-        put(entry)
+        try:
+            value, date = self.__get_gdp()
+            entry = get()
+            entry.value = value
+            entry.date = date
+            put(entry)
+        except Exception as e:
+            logging.exception(e)
+            taskqueue.add(url='/tasks/updategdp',
+                          queue_name='updategdp',
+                          method='GET')
             
         
 application = webapp.WSGIApplication([('/tasks/updategdp', UpdateGDPHandler)],
