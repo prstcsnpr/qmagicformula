@@ -24,27 +24,27 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         gdp_value = gdp.get().value
         for s in stocks:
             if s.ticker[0] == '2' or s.ticker[0] == '9':
-                logging.warn("%s %s is B Stock\n" % (s.ticker, s.title))
+                logging.warn("%s %s is B Stock" % (s.ticker, s.title))
                 continue
             if s.market_capital == 0.0:
-                logging.warn("The market capital is 0 for %s %s\n" % (s.ticker, s.title))
+                logging.warn("The market capital is 0 for %s %s" % (s.ticker, s.title))
                 continue
             if s.earnings_date is None:
-                logging.warn("There is no earnings for %s %s\n" % (s.ticker, s.title))
+                logging.warn("There is no earnings for %s %s" % (s.ticker, s.title))
                 continue
             if datetime.date.today().year - s.earnings_date.year > 2:
-                logging.warn("The earnings is too old for %s %s %s\n" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                logging.warn("The earnings is too old for %s %s %s" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
                 continue
             p += s.market_capital
             b += s.ownership_interest
             net_profit += s.net_profit
             if s.market_capital_date != datetime.date.today():
-                logging.warn("The stock (%s, %s) is not in Google List\n" % (s.ticker, s.title))
+                logging.warn("The stock (%s, %s) is not in Google List" % (s.ticker, s.title))
             sv = stock.GrahamFormulaStockView()
             try:
                 sv.parse(s)
             except Exception as e:
-                logging.warn("Parse stock (%s, %s) for %s\n" % (s.ticker, s.title, e))
+                logging.warn("Parse stock (%s, %s) for %s" % (s.ticker, s.title, e))
                 continue
             if sv.pe <= 10 and sv.pe > 0 and sv.debt_asset_ratio <= 50:
                 sv.format()
