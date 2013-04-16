@@ -13,7 +13,7 @@ class UpdateCategoryInfoHandler(webapp.RequestHandler):
 
     def get(self):
         taskqueue.add(url='/tasks/updateallcategoryinfo',
-                      queue_name='updateallcategoryinfo',
+                      queue_name='updatecategoryinfo',
                       method='GET')
         
         
@@ -24,7 +24,7 @@ class UpdateAllCategoryInfoHandler(webapp.RequestHandler):
             for line in file.readlines():
                 fields = line.split()
                 taskqueue.add(url='/tasks/updatesinglecategoryinfo',
-                              queue_name='updatesinglecategoryinfo',
+                              queue_name='updatecategoryinfo',
                               method='GET',
                               params={'ticker' : fields[0],
                                       'category' : fields[1]})

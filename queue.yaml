@@ -23,12 +23,12 @@ queue:
 - name: updatestockindex
   rate: 1/s
   bucket_size: 5
-- name: updateallcategoryinfo
-  rate: 1/s
-  bucket_size: 5
-- name: updatesinglecategoryinfo
+- name: updatecategoryinfo
   rate: 20/s
   bucket_size: 20
+- name: showstockindex
+  rate: 1/s
+  bucket_size: 5
 - name: updategdp
   rate: 1/s
   bucket_size: 5
