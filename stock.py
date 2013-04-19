@@ -20,6 +20,7 @@ class Stock(db.Model):
     total_assets = db.FloatProperty(indexed=False)
     earnings_date = db.DateProperty(indexed=False)
     category = db.StringProperty(indexed=False)
+    subcategory = db.StringProperty(indexed=False)
    
     
 class GrahamFormulaStockView(object):
@@ -61,6 +62,7 @@ class GrahamFormulaStockView(object):
         self.total_assets = s.total_assets
         self.earnings_date = s.earnings_date
         self.category = s.category
+        self.subcategory = s.category
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
@@ -125,6 +127,7 @@ class MagicFormulaStockView(object):
         self.total_assets = s.total_assets
         self.earnings_date = s.earnings_date
         self.category = s.category
+        self.subcategory = s.subcategory
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest

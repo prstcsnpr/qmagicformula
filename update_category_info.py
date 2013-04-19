@@ -27,7 +27,8 @@ class UpdateAllCategoryInfoHandler(webapp.RequestHandler):
                               queue_name='updatecategoryinfo',
                               method='GET',
                               params={'ticker' : fields[0],
-                                      'category' : fields[1]})
+                                      'category' : fields[1],
+                                      'subcategory' : fields[2]})
                 
                 
 class UpdateSingleCategoryInfoHandler(webapp.RequestHandler):
@@ -35,8 +36,10 @@ class UpdateSingleCategoryInfoHandler(webapp.RequestHandler):
     def get(self):
         ticker = self.request.get('ticker')
         category = self.request.get('category')
+        subcategory = self.request.get('subcategory')
         entry = stock.get(ticker)
         entry.category = category
+        entry.subcategory = subcategory
         stock.put(ticker, entry)
         
         
