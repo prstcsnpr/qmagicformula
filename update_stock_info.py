@@ -257,7 +257,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         return tangible_asset
     
     def __get_net_profit(self, profit):
-        net_profit = string.atof(profit['四、净利润'])
+        net_profit = string.atof(profit['归属于母公司所有者的净利润'])
         return net_profit
     
     def __get_ownership_interest(self, balance):
