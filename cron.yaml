@@ -6,7 +6,7 @@ cron:
   
 - description: update stock info
   url: /tasks/updatestockindex
-  schedule: every mon,tue,wed,thu,fri of month 07:15
+  schedule: every mon,tue,wed,thu,fri of month 07:20
 
 - description: show stock info
   url: /tasks/showstockindex
