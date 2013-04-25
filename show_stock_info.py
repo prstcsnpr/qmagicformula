@@ -108,6 +108,14 @@ class MagicFormulaHandler(webapp.RequestHandler):
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
+            if (s.category.find('D') > 0 or s.category.find('G') > 0 or s.category.find('N') > 0):
+                content.append("The stock (%s, %s) is Public Utilities\n")
+                miss.append(s.ticker)
+                continue
+            if s.category.find('J') > 0:
+                content.append('The stock (%s, %s) is Finance\n')
+                miss.append(s.ticker)
+                continue
             if s.market_capital_date != datetime.date.today():
                 content.append("The stock (%s, %s) is not in Google List\n" % (s.ticker, s.title))
             sv = stock.MagicFormulaStockView()
@@ -163,7 +171,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         stocks = query.fetch(10000)
         stocks, pb, pe, mc_gdp = self.__filter(stocks)
         stocks = self.__magicformula(stocks)
-        position=50
+        position = 100
         while position<len(stocks):
             if stocks[position].rank == stocks[position - 1].rank:
                 position = position + 1
