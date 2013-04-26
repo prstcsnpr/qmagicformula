@@ -43,7 +43,7 @@ class GrahamFormulaStockView(object):
         self.color = ""
         
     def format(self):
-        if self.roe >= 15 and self.pe <= 15 and self.pe > 0:
+        if self.roe >= 15:
             self.color = "#119911"
         else:
             self.color = "#991111"
@@ -97,7 +97,7 @@ class MagicFormulaStockView(object):
         self.color = ""
         
     def format(self):
-        if self.roe >= 15:
+        if self.roe >= 15 and self.pe <= 15 and self.pe > 0:
             self.color = "#119911"
         else:
             self.color = "#991111"
