@@ -18,6 +18,7 @@ class Stock(db.Model):
     ownership_interest = db.FloatProperty(indexed=False)
     net_profit = db.FloatProperty(indexed=False)
     total_assets = db.FloatProperty(indexed=False)
+    total_liability = db.FloatProperty(indexed=False)
     earnings_date = db.DateProperty(indexed=False)
     category = db.StringProperty(indexed=False)
     subcategory = db.StringProperty(indexed=False)
@@ -33,6 +34,7 @@ class GrahamFormulaStockView(object):
         self.net_profit = 0.0
         self.ownership_interest = 0.0
         self.total_assets = 0.0
+        self.total_liability = 0.0
         self.category = ""
         self.subcategory = ""
         self.earnings_date = None
@@ -61,13 +63,14 @@ class GrahamFormulaStockView(object):
         self.net_profit = s.net_profit
         self.ownership_interest = s.ownership_interest
         self.total_assets = s.total_assets
+        self.total_liability = s.total_liability
         self.earnings_date = s.earnings_date
         self.category = s.category
         self.subcategory = s.subcategory
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
-        self.debt_asset_ratio = (self.total_assets - self.ownership_interest) * 100 / self.total_assets
+        self.debt_asset_ratio = self.total_liability * 100 / self.total_assets
     
 class MagicFormulaStockView(object):
     
@@ -87,6 +90,7 @@ class MagicFormulaStockView(object):
         self.net_profit = 0.0
         self.ownership_interest = 0.0
         self.total_assets = 0.0
+        self.total_liability = 0.0
         self.category = ""
         self.subcategory = ""
         self.earnings_date = None
@@ -127,13 +131,14 @@ class MagicFormulaStockView(object):
         self.net_profit = s.net_profit
         self.ownership_interest = s.ownership_interest
         self.total_assets = s.total_assets
+        self.total_liability = s.total_liability
         self.earnings_date = s.earnings_date
         self.category = s.category
         self.subcategory = s.subcategory
         self.pe = self.market_capital / self.net_profit
         self.pb = self.market_capital / self.ownership_interest
         self.roe = self.net_profit * 100 / self.ownership_interest
-        self.debt_asset_ratio = self.total_assets * 100 / self.ownership_interest
+        self.debt_asset_ratio = self.total_liability * 100 / self.total_assets
         if self.tangible_asset != 0.0:
             self.roic = self.income / self.tangible_asset
         else:

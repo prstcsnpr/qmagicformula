@@ -261,12 +261,16 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         return net_profit
     
     def __get_ownership_interest(self, balance):
-        total_owner_s_equity = string.atof(balance['所有者权益(或股东权益)合计'])
+        total_owner_s_equity = string.atof(balance['归属于母公司股东权益合计'])
         return total_owner_s_equity
     
     def __get_total_assets(self, balance):
         total_assets = string.atof(balance['资产总计'])
         return total_assets
+    
+    def __get_total_liability(self, balance):
+        total_liability = string.atof(balance['负债合计'])
+        return total_liability
         
     def __update_earnings(self):
         ticker = self.request.get('ticker')
@@ -293,6 +297,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
                     net_profit = self.__get_net_profit(profit[this_earnings_date])
                     total_assets = self.__get_total_assets(balance[this_earnings_date])
+                    total_liability = self.__get_total_liability(balance[this_earnings_date])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
@@ -301,6 +306,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     tangible_asset = self.__get_tangible_asset(balance[this_earnings_date])
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
                     total_assets = self.__get_total_assets(balance[this_earnings_date])
+                    total_liability = self.__get_total_liability(balance[this_earnings_date])
                     ebit = (self.__get_ebit(profit[this_earnings_date]) 
                             + self.__get_ebit(profit[last_year_date]) 
                             - self.__get_ebit(profit[last_earnings_date]))
@@ -315,15 +321,17 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 bank_flag = True
                 if earnings_date.month == 12:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
-                    ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
+                    ownership_interest = string.atof(balance[this_earnings_date]['归属于母公司股东的权益'])
                     net_profit = string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
                     total_assets = string.atof(balance[this_earnings_date]['资产总计'])
+                    total_liability = string.atof(balance[this_earnings_date]['负债合计'])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
                     last_year_date = datetime.date(year=earnings_date.year - 1, month=12, day=31).strftime('%Y%m%d')
-                    ownership_interest = string.atof(balance[this_earnings_date]['股东权益合计'])
+                    ownership_interest = string.atof(balance[this_earnings_date]['归属于母公司股东的权益'])
                     total_assets = string.atof(balance[this_earnings_date]['资产总计'])
+                    total_liability = string.atof(balance[this_earnings_date]['负债合计'])
                     net_profit = (string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
                                   + string.atof(profit[last_year_date]['归属于母公司的净利润'])
                                   - string.atof(profit[last_earnings_date]['归属于母公司的净利润']))
@@ -332,6 +340,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 entry.ownership_interest = ownership_interest
                 entry.net_profit = net_profit
                 entry.total_assets = total_assets
+                entry.total_liability = total_liability
                 stock.put(ticker, entry)
                 logging.info("Firstly %s is a bank" % (ticker))
                 return
@@ -344,6 +353,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             entry.ownership_interest = ownership_interest
             entry.net_profit = net_profit
             entry.total_assets = total_assets
+            entry.total_liability = total_liability
             stock.put(ticker, entry)
         
     def __get_recent_earnings_date(self, year, balance, profit):
