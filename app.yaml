@@ -4,6 +4,9 @@ runtime: python27
 api_version: 1
 threadsafe: no
 
+inbound_services:
+- warmup
+
 handlers:
 - url: /tasks/updatestockinfo
   script: update_stock_info.py
