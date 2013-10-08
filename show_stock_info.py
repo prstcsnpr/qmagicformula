@@ -108,6 +108,10 @@ class MagicFormulaHandler(webapp.RequestHandler):
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
                 continue
+            if s.category == None:
+                s.category = ""
+            if s.subcategory == None:
+                s.subcategory = ""
             if (s.category.find('D') > 0 or s.category.find('G') > 0 or s.category.find('N') > 0):
                 content.append("The stock (%s, %s) is Public Utilities\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
