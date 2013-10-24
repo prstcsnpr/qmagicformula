@@ -46,7 +46,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
             except Exception as e:
                 logging.warn("Parse stock (%s, %s) for %s" % (s.ticker, s.title, e))
                 continue
-            if sv.pe <= 10 and sv.pe > 0 and sv.debt_asset_ratio <= 50:
+            if sv.pe <= 10 and sv.pe > 0 and sv.debt_asset_ratio <= 50 and sv.debt_asset_ratio > 0:
                 sv.format()
                 results.append(sv)
         return (results, p / b, p / net_profit, p * 100 / gdp_value)
