@@ -358,19 +358,19 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         
     def __get_recent_earnings_date(self, year, balance, profit):
         q4 = datetime.date(year=year, month=12, day=31)
-        q3 = datetime.date(year=year, month=9, day=30)
+        #q3 = datetime.date(year=year, month=9, day=30)
         q2 = datetime.date(year=year, month=6, day=30)
-        q1 = datetime.date(year=year, month=3, day=31)
+        #q1 = datetime.date(year=year, month=3, day=31)
         last_year = year - 1
         if q4.strftime('%Y%m%d') in balance and q4.strftime('%Y%m%d') in profit:
             return q4
         elif q4.replace(year=last_year).strftime('%Y%m%d') in balance and q4.replace(year=last_year).strftime('%Y%m%d') in profit:
-            if q3.strftime('%Y%m%d') in balance and q3.strftime('%Y%m%d') in profit and q3.replace(year=last_year).strftime('%Y%m%d') in balance and q3.replace(year=last_year).strftime('%Y%m%d') in profit:
-                return q3
-            elif q2.strftime('%Y%m%d') in balance and q2.strftime('%Y%m%d') in profit and q2.replace(year=last_year).strftime('%Y%m%d') in balance and q2.replace(year=last_year).strftime('%Y%m%d') in profit:
+            #if q3.strftime('%Y%m%d') in balance and q3.strftime('%Y%m%d') in profit and q3.replace(year=last_year).strftime('%Y%m%d') in balance and q3.replace(year=last_year).strftime('%Y%m%d') in profit:
+            #    return q3
+            if q2.strftime('%Y%m%d') in balance and q2.strftime('%Y%m%d') in profit and q2.replace(year=last_year).strftime('%Y%m%d') in balance and q2.replace(year=last_year).strftime('%Y%m%d') in profit:
                 return q2
-            elif q1.strftime('%Y%m%d') in balance and q1.strftime('%Y%m%d') in profit and q1.replace(year=last_year).strftime('%Y%m%d') in balance and q1.replace(year=last_year).strftime('%Y%m%d') in profit:
-                return q1
+            #elif q1.strftime('%Y%m%d') in balance and q1.strftime('%Y%m%d') in profit and q1.replace(year=last_year).strftime('%Y%m%d') in balance and q1.replace(year=last_year).strftime('%Y%m%d') in profit:
+            #    return q1
             else:
                 return None
         else:
