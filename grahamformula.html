@@ -12,7 +12,7 @@
 </table>
 <br>
 <table border="1" style="color:white">
-	<tr bgcolor="blue">
+	<tr bgcolor="black">
 		<th>Code</th>
 		<th>Name</th>
 		<th>Market Cap</th>
@@ -24,7 +24,7 @@
 		<th>Category</th>
 	</tr>
 	{% for s in stocks %}
-	<tr bgcolor="{{ s.color }}">
+	<tr bgcolor="black">
 		<td align="center">{{ s.ticker }}</td>
 		<td align="center">{{ s.title }}</td>
 		<td align="right">{{ s.market_capital }}</td>
