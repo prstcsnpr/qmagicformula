@@ -4,13 +4,44 @@
 import datetime
 import logging
 from google.appengine.api import mail
+from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 import gdp
+import postoffice
 import stock
 
+
+class FormulaResult(db.Model):
+    content = db.TextProperty(indexed=False)
+    
+
+def get(ticker):
+    entry = memcache.get(ticker)
+    if entry is None:
+        entry = FormulaResult.get_or_insert(ticker)
+        memcache.add(ticker, entry)
+    return entry
+
+
+def put(ticker, entry):
+    entry.put()
+    memcache.set(ticker, entry)
+    
+    
+class GrahamFormulaResultHandler(webapp.RequestHandler):
+    def get(self):
+        entry = get('grahamformula')
+        self.response.write(entry.content)
+        
+        
+class MagicFormulaResultHandler(webapp.RequestHandler):
+    def get(self):
+        entry = get('magicformula')
+        self.response.write(entry.content)
+        
 
 class GrahamFormulaHandler(webapp.RequestHandler):
     
@@ -71,8 +102,12 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         values['PE'] = "%.2f" % (pe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('grahamformula.html', values)
+        entry = get('grahamformula')
+        entry.content = content
+        put('grahamformula', entry)
         self.response.write(content)
         self.__send_mail(content)
+        postoffice.post("grahamformula")
     
 class MagicFormulaHandler(webapp.RequestHandler):
     
@@ -186,13 +221,20 @@ class MagicFormulaHandler(webapp.RequestHandler):
         values['PE'] = "%.2f" % (pe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('qmagicformula.html', values)
+        entry = get('magicformula')
+        entry.content = content
+        put('magicformula', entry)
         self.response.write(content)
         self.__send_mail(content)
+        postoffice.post("magicformula")
+        
         
             
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
-                                      ('/tasks/grahamformula', GrahamFormulaHandler)],
+                                      ('/tasks/grahamformula', GrahamFormulaHandler),
+                                      ('/magicformula', MagicFormulaResultHandler),
+                                      ('/grahamformula', GrahamFormulaResultHandler)],
                                      debug=True)
 
 

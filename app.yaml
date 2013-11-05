@@ -28,6 +28,9 @@ handlers:
   script: show_stock_info.py
   login: admin
   
+- url: /.*formula
+  script: show_stock_info.py
+  
 - url: /tasks/updatestockindex
   script: stock_index.py
   login: admin
@@ -42,6 +45,14 @@ handlers:
   
 - url: /tasks/update.*categoryinfo
   script: update_category_info.py
+  login: admin
+  
+- url: /tasks/postoffice
+  script: postoffice.py
+  login: admin
+  
+- url: /tasks/mail
+  script: postoffice.py
   login: admin
   
 - url: /
