@@ -102,11 +102,11 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         values['PE'] = "%.2f" % (pe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('grahamformula.html', values)
+        self.response.write(content)
+        self.__send_mail(content)
         entry = get('grahamformula')
         entry.content = content
         put('grahamformula', entry)
-        self.response.write(content)
-        self.__send_mail(content)
         postoffice.post("grahamformula")
     
 class MagicFormulaHandler(webapp.RequestHandler):
@@ -221,11 +221,11 @@ class MagicFormulaHandler(webapp.RequestHandler):
         values['PE'] = "%.2f" % (pe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('qmagicformula.html', values)
+        self.response.write(content)
+        self.__send_mail(content)
         entry = get('magicformula')
         entry.content = content
         put('magicformula', entry)
-        self.response.write(content)
-        self.__send_mail(content)
         postoffice.post("magicformula")
         
         
