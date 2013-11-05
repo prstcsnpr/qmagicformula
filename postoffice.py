@@ -24,6 +24,10 @@ class MailHandler(webapp.RequestHandler):
                                 method=urlfetch.POST,
                                 headers={'Content-Type': 'application/x-www-form-urlencoded'})
         
+class PostOfficeHandler(webapp.RequestHandler):
+    def get(self):
+        post('magicformula')
+        post('grahamformula')
 
 def post(formula):
     postmen = []
@@ -40,10 +44,11 @@ def post(formula):
                           method="POST",
                           params={'postman' : postman, 'client' : client, 'formula': formula})
             i = i + 1
-        
+            
 
 
-application = webapp.WSGIApplication([('/tasks/mail', MailHandler)], 
+application = webapp.WSGIApplication([('/tasks/mail', MailHandler),
+                                      ('/tasks/postoffice', PostOfficeHandler)], 
                                      debug=True)
 
 
