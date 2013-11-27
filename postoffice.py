@@ -70,8 +70,9 @@ class MailHandler(webapp.RequestHandler):
         client = self.request.get("client")
         postman = self.request.get("postman")
         formula = self.request.get("formula")
+        subject = self.request.get("subject")
         url = 'http://' + postman + '.appspot.com/tasks/postoffice'
-        form_fields = {"client": client, "formula": formula}
+        form_fields = {"client": client, "formula": formula, "subject": subject}
         form_data = urllib.urlencode(form_fields)
         result = urlfetch.fetch(url=url,
                                 payload=form_data,
@@ -80,10 +81,10 @@ class MailHandler(webapp.RequestHandler):
         
 class PostOfficeHandler(webapp.RequestHandler):
     def get(self):
-        post('magicformula')
-        post('grahamformula')
+        post('magicformula', '神奇公式')
+        post('grahamformula', '格雷厄姆公式')
 
-def post(formula):
+def post(formula, subject):
     postmen = []
     clients = []
     query = db.Query(PostMan)
@@ -100,7 +101,7 @@ def post(formula):
         logging.info(client + " by " + postman)
         taskqueue.add(url='/tasks/mail',
                       method="POST",
-                      params={'postman' : postman, 'client' : client, 'formula': formula})
+                      params={'postman' : postman, 'client' : client, 'formula': formula, 'subject': subject})
         i = i + 1
 
 

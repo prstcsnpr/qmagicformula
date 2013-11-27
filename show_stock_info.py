@@ -110,7 +110,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         entry = get('grahamformula')
         entry.content = content
         put('grahamformula', entry)
-        postoffice.post("grahamformula")
+        postoffice.post("grahamformula", "格雷厄姆公式")
     
 class MagicFormulaHandler(webapp.RequestHandler):
     
@@ -232,7 +232,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         entry = get('magicformula')
         entry.content = content
         put('magicformula', entry)
-        postoffice.post("magicformula")
+        postoffice.post("magicformula", "神奇公式")
         
         
             
