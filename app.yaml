@@ -31,6 +31,14 @@ handlers:
 - url: /.*formula
   script: show_stock_info.py
   
+- url: /postman
+  script: postoffice.py
+  login: admin
+  
+- url: /client
+  script: postoffice.py
+  login: admin
+  
 - url: /tasks/updatestockindex
   script: stock_index.py
   login: admin

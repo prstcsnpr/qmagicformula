@@ -1,0 +1,21 @@
+<form name="addclient" action="/client" method="post">
+	Client Email: 
+	<input type="text" name="clientemail" />
+	<input type="hidden" name="behavior" value="add" />
+	<input type="submit" value="Add" />
+</form>
+<br>
+<table border="1" style="color:white">
+	{% for client in clients %}
+	<tr bgcolor="green">
+			<td align="right">{{client.email}}</td>
+			<td align="center">
+				<form name="removeclient" action="/client" method="post">
+					<input type="hidden" name="clientemail" value="{{client.email}}" />
+					<input type="hidden" name="behavior" value="remove" />
+					<input type="submit" value="Remove" />
+				</form>
+			</td>
+	</tr>
+	{% endfor %}
+</table>

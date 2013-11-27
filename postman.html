@@ -1,0 +1,21 @@
+<form name="addpostman" action="/postman" method="post">
+	Postman Name: 
+	<input type="text" name="postmanname" />
+	<input type="hidden" name="behavior" value="add" />
+	<input type="submit" value="Add" />
+</form>
+<br>
+<table border="1" style="color:white">
+	{% for postman in postmen %}
+	<tr bgcolor="green">
+			<td align="right">{{postman.name}}</td>
+			<td align="center">
+				<form name="removepostman" action="/postman" method="post">
+					<input type="hidden" name="postmanname" value="{{postman.name}}" />
+					<input type="hidden" name="behavior" value="remove" />
+					<input type="submit" value="Remove" />
+				</form>
+			</td>
+	</tr>
+	{% endfor %}
+</table>

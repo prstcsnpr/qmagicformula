@@ -7,10 +7,64 @@ import urllib
 from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext.webapp import template
 
 
+class Client(db.Model):
+    email = db.StringProperty(indexed=False)
+    
+    
+class ClientHandler(webapp.RequestHandler):
+    def get(self):
+        query = db.Query(Client)
+        clients = query.fetch(10000)
+        value = {}
+        value['clients'] = clients
+        content = template.render('client.html', value)
+        self.response.write(content)
+        
+    def post(self):
+        behavior = self.request.get("behavior")
+        if "add" == behavior:
+            email = self.request.get("clientemail").strip().lower()
+            client = Client.get_or_insert(email)
+            client.email = email
+            client.put()
+        if "remove" == behavior:
+            email = self.request.get("clientemail")
+            Client.get_by_key_name(email).delete()
+        self.redirect("/client")
+
+
+class PostMan(db.Model):
+    name = db.StringProperty(indexed=False)
+    
+    
+class PostManHandler(webapp.RequestHandler):
+    def get(self):
+        query = db.Query(PostMan)
+        postmen = query.fetch(1000)
+        value = {}
+        value['postmen'] = postmen
+        content = template.render('postman.html', value)
+        self.response.write(content)
+        
+        
+    def post(self):
+        behavior = self.request.get("behavior")
+        if "add" == behavior:
+            name = self.request.get("postmanname").strip().lower()
+            postman = PostMan.get_or_insert(name)
+            postman.name = name
+            postman.put()
+        if "remove" == behavior:
+            name = self.request.get("postmanname")
+            PostMan.get_by_key_name(name).delete()
+        self.redirect("/postman")
+    
 class MailHandler(webapp.RequestHandler):
     def post(self):
         client = self.request.get("client")
@@ -31,24 +85,29 @@ class PostOfficeHandler(webapp.RequestHandler):
 
 def post(formula):
     postmen = []
-    with open('postmen') as file:
-        for line in file.readlines():
-            postman = line.split()[0]
-            postmen.append(postman)
-    i = 0;
-    with open('clients') as file:
-        for line in file.readlines():
-            client = line.split()[0]
-            postman = postmen[i % len(postmen)];
-            taskqueue.add(url='/tasks/mail',
-                          method="POST",
-                          params={'postman' : postman, 'client' : client, 'formula': formula})
-            i = i + 1
-            
+    clients = []
+    query = db.Query(PostMan)
+    men = query.fetch(1000)
+    for man in men:
+        postmen.append(man.name)
+    query = db.Query(Client)
+    men = query.fetch(10000)
+    for man in men:
+        clients.append(man.email)
+    i = 0
+    for client in clients:
+        postman = postmen[i % len(postmen)]
+        logging.info(client + " by " + postman)
+        taskqueue.add(url='/tasks/mail',
+                      method="POST",
+                      params={'postman' : postman, 'client' : client, 'formula': formula})
+        i = i + 1
 
 
 application = webapp.WSGIApplication([('/tasks/mail', MailHandler),
-                                      ('/tasks/postoffice', PostOfficeHandler)], 
+                                      ('/tasks/postoffice', PostOfficeHandler),
+                                      ('/postman', PostManHandler),
+                                      ('/client', ClientHandler)], 
                                      debug=True)
 
 
