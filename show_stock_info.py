@@ -52,6 +52,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         p = 0.0
         b = 0.0
         net_profit = 0.0
+        ownership_interest = 0.0
         gdp_value = gdp.get().value
         for s in stocks:
             if s.ticker[0] == '2' or s.ticker[0] == '9':
@@ -69,6 +70,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
             p += s.market_capital
             b += s.ownership_interest
             net_profit += s.net_profit
+            ownership_interest += s.ownership_interest
             if s.market_capital_date != datetime.date.today():
                 logging.warn("The stock (%s, %s) is not in Google List" % (s.ticker, s.title))
             sv = stock.GrahamFormulaStockView()
@@ -80,7 +82,7 @@ class GrahamFormulaHandler(webapp.RequestHandler):
             if sv.pe <= 10 and sv.pe > 0 and sv.debt_asset_ratio <= 50 and sv.debt_asset_ratio > 0:
                 sv.format()
                 results.append(sv)
-        return (results, p / b, p / net_profit, p * 100 / gdp_value)
+        return (results, p / b, p / net_profit, net_profit * 100/ownership_interest, p * 100 / gdp_value)
     
     def __send_mail(self, content):
         receiver="magicformula@googlegroups.com"
@@ -96,10 +98,11 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
-        stocks, pb, pe, mc_gdp = self.__filter(stocks)
+        stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
         values['stocks'] = stocks[0 : len(stocks)]
         values['PB'] = "%.4f" % (pb)
         values['PE'] = "%.2f" % (pe)
+        values['ROE'] = "%.1f%%" % (roe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('grahamformula.html', values)
         self.response.write(content)
@@ -118,6 +121,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         p = 0.0
         b = 0.0
         net_profit = 0.0
+        ownership_interest = 0.0
         gdp_value = gdp.get().value
         for s in stocks:
             if s.ticker[0] == '2' or s.ticker[0] == '9':
@@ -139,6 +143,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
             p += s.market_capital
             b += s.ownership_interest
             net_profit += s.net_profit
+            ownership_interest += s.ownership_interest
             if s.bank_flag == True:
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
@@ -169,7 +174,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
                        to="prstcsnpr@gmail.com",
                        subject="神奇公式执行结果",
                        body=''.join(content))
-        return (results, p / b, p / net_profit, p * 100 / gdp_value)
+        return (results, p / b, p / net_profit, net_profit * 100 / ownership_interest, p * 100 / gdp_value)
             
     
     def __magicformula(self, stocks):
@@ -208,7 +213,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         values = {}
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
-        stocks, pb, pe, mc_gdp = self.__filter(stocks)
+        stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
         stocks = self.__magicformula(stocks)
         position = 1000
         while position<len(stocks):
@@ -219,6 +224,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         values['stocks'] = stocks[0 : position]
         values['PB'] = "%.4f" % (pb)
         values['PE'] = "%.2f" % (pe)
+        values['ROE'] = "%.1f%%" % (roe)
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('qmagicformula.html', values)
         self.response.write(content)
