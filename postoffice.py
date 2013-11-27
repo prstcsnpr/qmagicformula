@@ -3,6 +3,7 @@
 
 import logging
 import string
+import sys
 import urllib
 from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
@@ -72,6 +73,10 @@ class MailHandler(webapp.RequestHandler):
         formula = self.request.get("formula")
         subject = self.request.get("subject")
         url = 'http://' + postman + '.appspot.com/tasks/postoffice'
+        code = sys.getdefaultencoding()
+        if code != 'utf8':
+            reload(sys)
+            sys.setdefaultencoding('utf8')
         form_fields = {"client": client, "formula": formula, "subject": subject}
         form_data = urllib.urlencode(form_fields)
         result = urlfetch.fetch(url=url,
