@@ -215,7 +215,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         stocks = query.fetch(10000)
         stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
         stocks = self.__magicformula(stocks)
-        position = 1000
+        position = 500
         while position<len(stocks):
             if stocks[position].rank == stocks[position - 1].rank:
                 position = position + 1
