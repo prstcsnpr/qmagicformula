@@ -67,7 +67,7 @@ class NetCurrentAssetApproachHandler(webapp.RequestHandler):
         entry = get('netcurrentassetapproach')
         entry.content = content
         put('netcurrentassetapproach', entry)
-        #postoffice.post("netcurrentassetapproach", "净流动资产法")
+        postoffice.post("netcurrentassetapproach", "净流动资产法")
         
     def __send_mail(self, content):
         receiver="magicformula@googlegroups.com"
