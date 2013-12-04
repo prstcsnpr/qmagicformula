@@ -18,16 +18,65 @@ class Stock(db.Model):
     ownership_interest = db.FloatProperty(indexed=False)
     net_profit = db.FloatProperty(indexed=False)
     total_assets = db.FloatProperty(indexed=False)
+    current_assets = db.FloatProperty(indexed=False)
     total_liability = db.FloatProperty(indexed=False)
     earnings_date = db.DateProperty(indexed=False)
     category = db.StringProperty(indexed=False)
     subcategory = db.StringProperty(indexed=False)
+    
+    
+class NetCurrentAssetApproachStockView(object):
+    
+    def __init__(self):
+        self.ticker = ''
+        self.title = ''
+        self.market_capital = 0.0
+        self.net_profit = 0.0
+        self.ownership_interest = 0.0
+        self.total_liability = 0.0
+        self.current_assets = 0.0
+        self.category = ""
+        self.subcategory = ""
+        self.earnings_date = None
+        self.pe = 0.0
+        self.pb = 0.0
+        self.roe = 0.0
+        self.net_current_assets = 0.0
+        self.color = ""
+        
+    def parse(self, s):
+        self.ticker = s.ticker
+        self.title = s.title
+        self.market_capital = s.market_capital
+        self.net_profit = s.net_profit
+        self.ownership_interest = s.ownership_interest
+        self.total_liability = s.total_liability
+        self.current_assets = s.current_assets
+        self.earnings_date = s.earnings_date
+        self.category = s.category
+        self.subcategory = s.subcategory
+        self.pe = self.market_capital / self.net_profit
+        self.pb = self.market_capital / self.ownership_interest
+        self.roe = self.net_profit * 100 / self.ownership_interest
+        self.net_current_assets = self.current_assets - self.total_liability
+        
+    def format(self):
+        if 3 * self.market_capital < 2 * self.net_current_assets:
+            self.color = "green"
+        else:
+            self.color = "red"
+        self.market_capital = "%.2f亿" % (self.market_capital / 100000000)
+        self.roe = "%.1f%%" % (self.roe)
+        self.pe = "%.1f" % (self.pe)
+        self.pb = "%.1f" % (self.pb)
+        self.net_current_assets = "%.2f亿" % (self.net_current_assets / 100000000)
+        self.earnings_date = self.earnings_date.strftime("%Y%m%d")
+        
    
     
 class GrahamFormulaStockView(object):
     
     def __init__(self):
-        self.rank = 0
         self.ticker = ''
         self.title = ''
         self.market_capital = 0.0
