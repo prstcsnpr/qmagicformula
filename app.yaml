@@ -28,6 +28,13 @@ handlers:
   script: show_stock_info.py
   login: admin
   
+- url: /tasks/netcurrentassetapproach
+  script: show_stock_info.py
+  login: admin
+  
+- url: /netcurrentassetapproach
+  script: show_stock_info.py
+  
 - url: /.*formula
   script: show_stock_info.py
   

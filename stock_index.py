@@ -43,6 +43,9 @@ class ShowStockIndexHandler(webapp.RequestHandler):
                 taskqueue.add(url='/tasks/grahamformula',
                               queue_name='formula',
                               method='GET')
+                taskqueue.add(url='/tasks/netcurrentassetapproach',
+                              queue_name='formula',
+                              method='GET')
         except Exception as e:
             logging.exception(e)
             taskqueue.add(url='/tasks/showstockindex',
