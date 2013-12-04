@@ -31,6 +31,12 @@ def put(ticker, entry):
     memcache.set(ticker, entry)
     
     
+class NetCurrentAssetApproachResultHandler(webapp.RequestHandler):
+    def get(self):
+        entry = get('netcurrentassetapproach')
+        self.response.write(entry.content)
+    
+    
 class GrahamFormulaResultHandler(webapp.RequestHandler):
     def get(self):
         entry = get('grahamformula')
@@ -42,6 +48,79 @@ class MagicFormulaResultHandler(webapp.RequestHandler):
         entry = get('magicformula')
         self.response.write(entry.content)
         
+        
+class NetCurrentAssetApproachHandler(webapp.RequestHandler):
+    
+    def get(self):
+        values = {}
+        query = db.Query(stock.Stock)
+        stocks = query.fetch(10000)
+        stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
+        values['stocks'] = stocks[0 : len(stocks)]
+        values['PB'] = "%.4f" % (pb)
+        values['PE'] = "%.2f" % (pe)
+        values['ROE'] = "%.1f%%" % (roe)
+        values['MCGDP'] = "%.0f%%" % (mc_gdp)
+        content = template.render('netcurrentassetapproach.html', values)
+        self.response.write(content)
+        self.__send_mail(content)
+        entry = get('netcurrentassetapproach')
+        entry.content = content
+        put('netcurrentassetapproach', entry)
+        #postoffice.post("netcurrentassetapproach", "净流动资产法")
+        
+    def __send_mail(self, content):
+        receiver="magicformula@googlegroups.com"
+        #receiver="prstcsnpr@gmail.com"
+        mail.send_mail(sender="prstcsnpr@gmail.com",
+                       to=receiver,
+                       subject="净流动资产法",
+                       body='',
+                       html=content)
+        logging.info('Mail result for netcurrentassetapproach to %s' % (receiver))
+        
+    def __filter(self, stocks):
+        content = []
+        results = []
+        miss = []
+        p = 0.0
+        b = 0.0
+        net_profit = 0.0
+        ownership_interest = 0.0
+        gdp_value = gdp.get().value
+        for s in stocks:
+            if s.ticker[0] == '2' or s.ticker[0] == '9':
+                logging.warn("%s %s is B Stock" % (s.ticker, s.title))
+                continue
+            if s.market_capital == 0.0:
+                logging.warn("The market capital is 0 for %s %s" % (s.ticker, s.title))
+                continue
+            if s.earnings_date is None:
+                logging.warn("There is no earnings for %s %s" % (s.ticker, s.title))
+                continue
+            if datetime.date.today().year - s.earnings_date.year > 2:
+                logging.warn("The earnings is too old for %s %s %s" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
+                continue
+            p += s.market_capital
+            b += s.ownership_interest
+            net_profit += s.net_profit
+            ownership_interest += s.ownership_interest
+            if s.bank_flag == True:
+                content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
+                miss.append(s.ticker)
+                continue
+            if s.market_capital_date != datetime.date.today():
+                logging.warn("The stock (%s, %s) is not in Google List" % (s.ticker, s.title))
+            sv = stock.NetCurrentAssetApproachStockView()
+            try:
+                sv.parse(s)
+            except Exception as e:
+                logging.warn("Parse stock (%s, %s) for %s" % (s.ticker, s.title, e))
+                continue
+            if sv.pe > 0 and sv.net_current_assets > sv.market_capital:
+                sv.format()
+                results.append(sv)
+        return (results, p / b, p / net_profit, net_profit * 100/ownership_interest, p * 100 / gdp_value)
 
 class GrahamFormulaHandler(webapp.RequestHandler):
     
@@ -239,8 +318,10 @@ class MagicFormulaHandler(webapp.RequestHandler):
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
                                       ('/tasks/grahamformula', GrahamFormulaHandler),
+                                      ('/tasks/netcurrentassetapproach', NetCurrentAssetApproachHandler),
                                       ('/magicformula', MagicFormulaResultHandler),
-                                      ('/grahamformula', GrahamFormulaResultHandler)],
+                                      ('/grahamformula', GrahamFormulaResultHandler),
+                                      ('/netcurrentassetapproach', NetCurrentAssetApproachResultHandler)],
                                      debug=True)
 
 
