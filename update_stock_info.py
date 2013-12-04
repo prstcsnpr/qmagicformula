@@ -271,6 +271,10 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __get_total_liability(self, balance):
         total_liability = string.atof(balance['负债合计'])
         return total_liability
+    
+    def __get_current_assets(self, balance):
+        current_assets = string.atof(balance['流动资产合计'])
+        return current_assets
         
     def __update_earnings(self):
         ticker = self.request.get('ticker')
@@ -298,6 +302,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     net_profit = self.__get_net_profit(profit[this_earnings_date])
                     total_assets = self.__get_total_assets(balance[this_earnings_date])
                     total_liability = self.__get_total_liability(balance[this_earnings_date])
+                    current_assets = self.__get_current_assets(balance[this_earnings_date])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
@@ -307,6 +312,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
                     total_assets = self.__get_total_assets(balance[this_earnings_date])
                     total_liability = self.__get_total_liability(balance[this_earnings_date])
+                    current_assets = self.__get_current_assets(balance[this_earnings_date])
                     ebit = (self.__get_ebit(profit[this_earnings_date]) 
                             + self.__get_ebit(profit[last_year_date]) 
                             - self.__get_ebit(profit[last_earnings_date]))
@@ -354,6 +360,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             entry.net_profit = net_profit
             entry.total_assets = total_assets
             entry.total_liability = total_liability
+            entry.current_assets = current_assets
             stock.put(ticker, entry)
         
     def __get_recent_earnings_date(self, year, balance, profit):
