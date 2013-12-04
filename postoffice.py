@@ -88,6 +88,7 @@ class PostOfficeHandler(webapp.RequestHandler):
     def get(self):
         post('magicformula', '神奇公式')
         post('grahamformula', '格雷厄姆公式')
+        post('netcurrentassetapproach', '净流动资产法')
 
 def post(formula, subject):
     postmen = []
