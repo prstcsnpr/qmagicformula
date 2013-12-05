@@ -224,13 +224,14 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         a_maturity_of_non_current_liabilities = string.atof(balance['一年内到期的非流动负债'])
         cope_with_short_term_bond = string.atof(balance['应付短期债券'])
         monetary_fund = string.atof(balance['货币资金'])
+        transactional_financial_assets = string.atof(balance['交易性金融资产'])
         long_term_loans = string.atof(balance['长期借款'])
         bonds_payable = string.atof(balance['应付债券'])
         minority_equity = string.atof(balance['少数股东权益'])
         available_for_sale_financial_assets = string.atof(balance['可供出售金融资产'])
         hold_expires_investment = string.atof(balance['持有至到期投资'])
         delay_income_tax_liabilities = string.atof(balance['递延所得税负债'])
-        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_asset + monetary_fund))
+        excess_cash = max(0, (monetary_fund + transactional_financial_assets) - max(0, current_liabilities - (current_asset - (monetary_fund + transactional_financial_assets))))
         enterprise_value = (short_term_loans + notes_payable + a_maturity_of_non_current_liabilities
                             + cope_with_short_term_bond + long_term_loans
                             + bonds_payable + minority_equity
