@@ -249,7 +249,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
         fixed_assets_net_value = string.atof(balance['固定资产净值'])
         investment_real_estate = string.atof(balance['投资性房地产'])
         monetary_fund = string.atof(balance['货币资金'])
-        excess_cash = max(0, monetary_fund - max(0, current_liabilities - current_asset + monetary_fund))
+        transactional_financial_assets = string.atof(balance['交易性金融资产'])
+        excess_cash = max(0, (monetary_fund + transactional_financial_assets) - max(0, current_liabilities - (current_asset - (monetary_fund + transactional_financial_assets))))
         tangible_asset = (current_asset - current_liabilities
                           + short_term_loans + notes_payable
                           + a_maturity_of_non_current_liabilities
