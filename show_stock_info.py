@@ -3,8 +3,11 @@
 
 import datetime
 import logging
+import sys
+import urllib
 from google.appengine.api import mail
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -256,7 +259,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         return (results, p / b, p / net_profit, net_profit * 100 / ownership_interest, p * 100 / gdp_value)
             
     
-    def __magicformula(self, stocks):
+    def __magicformula(self, stocks, roic_rate = 1, ebit_ev_rate = 1):
         results = sorted(stocks, cmp=lambda a, b : stock.cmp_roic(a, b))
         for i in range(len(results)):
             if i != 0 and stock.cmp_roic(results[i], results[i-1]) == 0:
@@ -269,21 +272,19 @@ class MagicFormulaHandler(webapp.RequestHandler):
                 results[i].ebit_ev_rank = results[i-1].ebit_ev_rank
             else:
                 results[i].ebit_ev_rank = i + 1
-        results = sorted(results, key=lambda stock : stock.roic_rank + stock.ebit_ev_rank)
+        results = sorted(results, key=lambda stock : stock.roic_rank * roic_rate + stock.ebit_ev_rank * ebit_ev_rate)
         for i in range(len(results)):
-            if i != 0 and results[i].roic_rank + results[i].ebit_ev_rank == results[i-1].roic_rank + results[i-1].ebit_ev_rank:
+            if i != 0 and results[i].roic_rank * roic_rate + results[i].ebit_ev_rank * ebit_ev_rate == results[i-1].roic_rank * roic_rate + results[i-1].ebit_ev_rank * ebit_ev_rate:
                 results[i].rank = results[i-1].rank
             else:
                 results[i].rank = i + 1
             results[i].format()
         return results
     
-    def __send_mail(self, content):
-        receiver="magicformula@googlegroups.com"
-        #receiver="prstcsnpr@gmail.com"
+    def __send_mail(self, content, receiver, subject):
         mail.send_mail(sender="prstcsnpr@gmail.com",
                        to=receiver,
-                       subject="神奇公式",
+                       subject=subject,
                        body='',
                        html=content)
         logging.info('Mail result for magicformula to %s' % (receiver))
@@ -307,13 +308,48 @@ class MagicFormulaHandler(webapp.RequestHandler):
         values['MCGDP'] = "%.0f%%" % (mc_gdp)
         content = template.render('qmagicformula.html', values)
         self.response.write(content)
-        self.__send_mail(content)
+        self.__send_mail(content, "magicformula@googlegroups.com", '神奇公式')
+        #self.__send_mail(content, "prstcsnpr@gmail.com", '神奇公式')
         entry = get('magicformula')
         entry.content = content
         put('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
+        self.__test_magicformula()
         
+    def __test_magicformula(self):
+        values = {}
+        query = db.Query(stock.Stock)
+        stocks = query.fetch(10000)
+        stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
+        stocks = self.__magicformula(stocks, 0.3, 1.7)
+        position = 250
+        while position<len(stocks):
+            if stocks[position].rank == stocks[position - 1].rank:
+                position = position + 1
+            else:
+                break
+        values['stocks'] = stocks[0 : position]
+        values['PB'] = "%.4f" % (pb)
+        values['PE'] = "%.2f" % (pe)
+        values['ROE'] = "%.1f%%" % (roe)
+        values['MCGDP'] = "%.0f%%" % (mc_gdp)
+        content = template.render('qmagicformula.html', values)
+        self.__send_mail(content, "prstcsnpr@gmail.com", '土豆版神奇公式')
+        self.__send_mail(content, "sunsshop@gmail.com", '土豆版神奇公式')
         
+    def __post_bae(self):
+        entry = get('magicformula')
+        url = 'http://qmagicformula.duapp.com/magicformula'
+        code = sys.getdefaultencoding()
+        if code != 'utf8':
+            reload(sys)
+            sys.setdefaultencoding('utf8')
+        form_fields = {"content": entry.content}
+        form_data = urllib.urlencode(form_fields)
+        result = urlfetch.fetch(url=url,
+                                payload=form_data,
+                                method=urlfetch.POST,
+                                headers={'Content-Type': 'application/x-www-form-urlencoded'})
             
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
