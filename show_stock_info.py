@@ -337,7 +337,12 @@ class MagicFormulaHandler(webapp.RequestHandler):
             result['earningsDate'] = stock.earnings_date
             result['catetory'] = stock.subcategory
             results.append(result)
-        return json.dumps(results)
+        total_results = {}
+        total_results['error'] = 0
+        total_results['description'] = 'No error'
+        total_results['date'] = datetime.date.today().strftime("%Y%m%d")
+        total_results['list'] = results
+        return json.dumps(total_results)
         
     def __test_magicformula(self):
         values = {}
