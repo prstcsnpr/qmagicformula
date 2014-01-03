@@ -2,7 +2,9 @@
 
 
 import datetime
+import httplib
 import logging
+import json
 import sys
 import urllib
 from google.appengine.api import mail
@@ -315,6 +317,27 @@ class MagicFormulaHandler(webapp.RequestHandler):
         put('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
         self.__test_magicformula()
+        self.__post_bae(self.generate_json(values['stocks']))
+        
+    def generate_json(self, stocks):
+        results = []
+        for stock in stocks:
+            result = {}
+            result['rank'] = stock.rank
+            result['code'] = stock.ticker
+            result['name'] = stock.title
+            result['marketCap'] = stock.market_capital
+            result['rotc'] = stock.roic
+            result['rotcRank'] = stock.roic_rank
+            result['ey'] = stock.ebit_ev
+            result['eyRank'] = stock.ebit_ev_rank
+            result['roe'] = stock.roe
+            result['pb'] = stock.pb
+            result['pe'] = stock.pe
+            result['earningsDate'] = stock.earnings_date
+            result['catetory'] = stock.subcategory
+            results.append(result)
+        return json.dumps(results)
         
     def __test_magicformula(self):
         values = {}
@@ -337,19 +360,16 @@ class MagicFormulaHandler(webapp.RequestHandler):
         self.__send_mail(content, "prstcsnpr@gmail.com", '土豆版神奇公式')
         self.__send_mail(content, "sunsshop@gmail.com", '土豆版神奇公式')
         
-    def __post_bae(self):
-        entry = get('magicformula')
-        url = 'http://qmagicformula.duapp.com/magicformula'
-        code = sys.getdefaultencoding()
-        if code != 'utf8':
-            reload(sys)
-            sys.setdefaultencoding('utf8')
-        form_fields = {"content": entry.content}
-        form_data = urllib.urlencode(form_fields)
-        result = urlfetch.fetch(url=url,
-                                payload=form_data,
-                                method=urlfetch.POST,
-                                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    def __post_bae(self, content):
+        uri = ''
+        with open('config/uri') as file:
+            for line in file.readlines():
+                if len(line) > 0:
+                    uri = line.strip()
+                    break
+        c = httplib.HTTPConnection('bcs.duapp.com')
+        c.request("PUT", uri, content)
+        r = c.getresponse()
             
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
