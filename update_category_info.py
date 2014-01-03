@@ -20,7 +20,7 @@ class UpdateCategoryInfoHandler(webapp.RequestHandler):
 class UpdateAllCategoryInfoHandler(webapp.RequestHandler):
     
     def get(self):
-        with open('category') as file:
+        with open('config/category') as file:
             for line in file.readlines():
                 fields = line.split()
                 taskqueue.add(url='/tasks/updatesinglecategoryinfo',
