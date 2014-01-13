@@ -317,7 +317,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         put('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
         self.__test_magicformula()
-        self.__post_bae(self.generate_json(stocks[0 : 50]))
+        self.__post_bae(self.generate_json(values['stocks']))
         
     def generate_json(self, stocks):
         results = []
