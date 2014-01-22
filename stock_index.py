@@ -35,17 +35,17 @@ class ShowStockIndexHandler(webapp.RequestHandler):
     
     def get(self):
         try:
-            entry = get()
-            if entry.index_date == datetime.date.today():
-                taskqueue.add(url='/tasks/magicformula',
-                              queue_name='formula',
-                              method='GET')
-                taskqueue.add(url='/tasks/grahamformula',
-                              queue_name='formula',
-                              method='GET')
-                taskqueue.add(url='/tasks/netcurrentassetapproach',
-                              queue_name='formula',
-                              method='GET')
+            #entry = get()
+            #if entry.index_date == datetime.date.today():
+            taskqueue.add(url='/tasks/magicformula',
+                          queue_name='formula',
+                          method='GET')
+            taskqueue.add(url='/tasks/grahamformula',
+                          queue_name='formula',
+                          method='GET')
+            taskqueue.add(url='/tasks/netcurrentassetapproach',
+                          queue_name='formula',
+                          method='GET')
         except Exception as e:
             logging.exception(e)
             taskqueue.add(url='/tasks/showstockindex',
