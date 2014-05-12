@@ -8,6 +8,10 @@ inbound_services:
 - warmup
 
 handlers:
+- url: /tasks/bae
+  script: bae.py
+  login: admin
+  
 - url: /tasks/updatestockinfo
   script: update_stock_info.py
   login: admin
