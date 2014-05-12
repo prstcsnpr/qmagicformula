@@ -7,6 +7,7 @@ import logging
 import json
 import sys
 import urllib
+from google.appengine.api.labs import taskqueue
 from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
@@ -316,8 +317,8 @@ class MagicFormulaHandler(webapp.RequestHandler):
         entry.content = content
         put('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
-        self.__test_magicformula()
-        #self.__post_bae(self.generate_json(values['stocks']))
+        self.generate_json(values['stocks'])
+        #self.__update_json()
         
     def generate_json(self, stocks):
         results = []
@@ -342,39 +343,16 @@ class MagicFormulaHandler(webapp.RequestHandler):
         total_results['description'] = 'No error'
         total_results['date'] = datetime.date.today().strftime("%Y%m%d")
         total_results['list'] = results
-        return json.dumps(total_results)
+        json_result = json.dumps(total_results)
+        entry = get('magicformulaforjson')
+        entry.content = json_result
+        put('magicformulaforjson', entry)
+        return json_result
+
         
-    def __test_magicformula(self):
-        values = {}
-        query = db.Query(stock.Stock)
-        stocks = query.fetch(10000)
-        stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
-        stocks = self.__magicformula(stocks, 0.85, 0.15)
-        position = 100
-        while position<len(stocks):
-            if stocks[position].rank == stocks[position - 1].rank:
-                position = position + 1
-            else:
-                break
-        values['stocks'] = stocks[0 : position]
-        values['PB'] = "%.4f" % (pb)
-        values['PE'] = "%.2f" % (pe)
-        values['ROE'] = "%.1f%%" % (roe)
-        values['MCGDP'] = "%.0f%%" % (mc_gdp)
-        content = template.render('qmagicformula.html', values)
-        self.__send_mail(content, "prstcsnpr@gmail.com", '土豆版神奇公式')
-        self.__send_mail(content, "sunsshop@gmail.com", '土豆版神奇公式')
-        
-    def __post_bae(self, content):
-        uri = ''
-        with open('config/uri') as file:
-            for line in file.readlines():
-                if len(line) > 0:
-                    uri = line.strip()
-                    break
-        c = httplib.HTTPConnection('bcs.duapp.com')
-        c.request("PUT", uri, content)
-        r = c.getresponse()
+    def __update_json(self):
+        taskqueue.add(url='/tasks/bae', method='GET')
+
             
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
