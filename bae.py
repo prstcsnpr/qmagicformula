@@ -12,7 +12,6 @@ import stock_result
 class BAEHandler(webapp.RequestHandler):
     def get(self):
         entry = stock_result.get_json('magicformula')
-        logging.info('fuck: '+entry.content)
         uri = ''
         with open('config/uri') as file:
             for line in file.readlines():
