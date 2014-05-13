@@ -18,40 +18,24 @@ from google.appengine.ext.webapp import template
 import gdp
 import postoffice
 import stock
+import stock_result
 
-
-class FormulaResult(db.Model):
-    content = db.TextProperty(indexed=False)
-    
-
-def get(ticker):
-    entry = memcache.get(ticker)
-    if entry is None:
-        entry = FormulaResult.get_or_insert(ticker)
-        memcache.add(ticker, entry)
-    return entry
-
-
-def put(ticker, entry):
-    entry.put()
-    memcache.set(ticker, entry)
-    
     
 class NetCurrentAssetApproachResultHandler(webapp.RequestHandler):
     def get(self):
-        entry = get('netcurrentassetapproach')
+        entry = stock_result.get_html('netcurrentassetapproach')
         self.response.write(entry.content)
     
     
 class GrahamFormulaResultHandler(webapp.RequestHandler):
     def get(self):
-        entry = get('grahamformula')
+        entry = stock_result.get_html('grahamformula')
         self.response.write(entry.content)
         
         
 class MagicFormulaResultHandler(webapp.RequestHandler):
     def get(self):
-        entry = get('magicformula')
+        entry = stock_result.get_html('magicformula')
         self.response.write(entry.content)
         
         
@@ -70,9 +54,9 @@ class NetCurrentAssetApproachHandler(webapp.RequestHandler):
         content = template.render('netcurrentassetapproach.html', values)
         self.response.write(content)
         self.__send_mail(content)
-        entry = get('netcurrentassetapproach')
+        entry = stock_result.get_html('netcurrentassetapproach')
         entry.content = content
-        put('netcurrentassetapproach', entry)
+        stock_result.set_html('netcurrentassetapproach', entry)
         postoffice.post("netcurrentassetapproach", "净流动资产法")
         
     def __send_mail(self, content):
@@ -192,9 +176,9 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         content = template.render('grahamformula.html', values)
         self.response.write(content)
         self.__send_mail(content)
-        entry = get('grahamformula')
+        entry = stock_result.get_html('grahamformula')
         entry.content = content
-        put('grahamformula', entry)
+        stock_result.set_html('grahamformula', entry)
         postoffice.post("grahamformula", "格雷厄姆公式")
     
 class MagicFormulaHandler(webapp.RequestHandler):
@@ -313,16 +297,16 @@ class MagicFormulaHandler(webapp.RequestHandler):
         self.response.write(content)
         self.__send_mail(content, "magicformula@googlegroups.com", '神奇公式')
         #self.__send_mail(content, "prstcsnpr@gmail.com", '神奇公式')
-        entry = get('magicformula')
+        entry = stock_result.get_html('magicformula')
         entry.content = content
-        put('magicformula', entry)
+        stock_result.set_html('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
         self.generate_json(values['stocks'])
-        #self.__update_json()
+        self.__update_json()
         
     def generate_json(self, stocks):
         results = []
-        for stock in stocks:
+        for stock in stocks[0 : 5]:
             result = {}
             result['rank'] = stock.rank
             result['code'] = stock.ticker
@@ -344,10 +328,9 @@ class MagicFormulaHandler(webapp.RequestHandler):
         total_results['date'] = datetime.date.today().strftime("%Y%m%d")
         total_results['list'] = results
         json_result = json.dumps(total_results)
-        entry = get('magicformulaforjson')
+        entry = stock_result.get_json('magicformula')
         entry.content = json_result
-        put('magicformulaforjson', entry)
-        return json_result
+        stock_result.set_json('magicformula', entry)
 
         
     def __update_json(self):

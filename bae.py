@@ -7,12 +7,12 @@ import string
 from google.appengine.api.labs import taskqueue
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
-import show_stock_info
+import stock_result
 
 class BAEHandler(webapp.RequestHandler):
     def get(self):
-        entry = show_stock_info.get('magicformulaforjson')
-        logging.info(entry.content)
+        entry = stock_result.get_json('magicformula')
+        logging.info('fuck: '+entry.content)
         uri = ''
         with open('config/uri') as file:
             for line in file.readlines():
