@@ -306,7 +306,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         
     def generate_json(self, stocks):
         results = []
-        for stock in stocks[0 : 5]:
+        for stock in stocks[0 : 50]:
             result = {}
             result['rank'] = stock.rank
             result['code'] = stock.ticker
