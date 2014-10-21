@@ -274,8 +274,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __update_lastest_earnings(self):
         ticker = self.request.get('ticker')
         entry = stock.get(ticker)
-        balance = self.__get_balance_earnings()
-        profit = self.__get_profit_earnings()
+        balance = self.balance
+        profit = self.profit
         year = datetime.date.today().year
         for i in range(3):
             earnings_date = self.__get_lastest_earnings_date(year - i, balance, profit)
@@ -340,8 +340,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __update_earnings(self):
         ticker = self.request.get('ticker')
         entry = stock.get(ticker)
-        balance = self.__get_balance_earnings()
-        profit = self.__get_profit_earnings()
+        balance = self.balance
+        profit = self.profit
         year = datetime.date.today().year
         for i in range(3):
             earnings_date = self.__get_recent_earnings_date(year - i, balance, profit)
@@ -466,6 +466,8 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             
     def get(self):
         ticker = self.request.get('ticker')
+        self.balance = self.__get_balance_earnings()
+        self.profit = self.__get_profit_earnings()
         self.__update_earnings()
         self.__update_lastest_earnings()
         
