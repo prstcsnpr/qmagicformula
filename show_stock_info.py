@@ -92,9 +92,9 @@ class NetCurrentAssetApproachHandler(webapp.RequestHandler):
                 logging.warn("The earnings is too old for %s %s %s" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
                 continue
             p += s.market_capital
-            b += s.ownership_interest
-            net_profit += s.net_profit
-            ownership_interest += s.ownership_interest
+            b += s.lastest_ownership_interest
+            net_profit += s.lastest_net_profit
+            ownership_interest += s.lastest_ownership_interest
             if s.bank_flag == True:
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
@@ -137,9 +137,9 @@ class GrahamFormulaHandler(webapp.RequestHandler):
                 logging.warn("The earnings is too old for %s %s %s" % (s.ticker, s.title, s.earnings_date.strftime("%Y%m%d")))
                 continue
             p += s.market_capital
-            b += s.ownership_interest
-            net_profit += s.net_profit
-            ownership_interest += s.ownership_interest
+            b += s.lastest_ownership_interest
+            net_profit += s.lastest_net_profit
+            ownership_interest += s.lastest_ownership_interest
             if s.market_capital_date != datetime.date.today():
                 logging.warn("The stock (%s, %s) is not in Google List" % (s.ticker, s.title))
             sv = stock.GrahamFormulaStockView()
@@ -210,9 +210,9 @@ class MagicFormulaHandler(webapp.RequestHandler):
                 miss.append(s.ticker)
                 continue
             p += s.market_capital
-            b += s.ownership_interest
-            net_profit += s.net_profit
-            ownership_interest += s.ownership_interest
+            b += s.lastest_ownership_interest
+            net_profit += s.lastest_net_profit
+            ownership_interest += s.lastest_ownership_interest
             if s.bank_flag == True:
                 content.append("The stock (%s, %s) is a bank\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
@@ -301,42 +301,7 @@ class MagicFormulaHandler(webapp.RequestHandler):
         entry.content = content
         stock_result.set_html('magicformula', entry)
         postoffice.post("magicformula", "神奇公式")
-        self.generate_json(values['stocks'])
-        self.__update_json()
         
-    def generate_json(self, stocks):
-        results = []
-        for stock in stocks[0 : 50]:
-            result = {}
-            result['rank'] = stock.rank
-            result['code'] = stock.ticker
-            result['name'] = stock.title
-            result['marketCap'] = stock.market_capital
-            result['rotc'] = stock.roic
-            result['rotcRank'] = stock.roic_rank
-            result['ey'] = stock.ebit_ev
-            result['eyRank'] = stock.ebit_ev_rank
-            result['roe'] = stock.roe
-            result['pb'] = stock.pb
-            result['pe'] = stock.pe
-            result['earningsDate'] = stock.earnings_date
-            result['catetory'] = stock.subcategory
-            results.append(result)
-        total_results = {}
-        total_results['error'] = 0
-        total_results['description'] = 'No error'
-        total_results['date'] = datetime.date.today().strftime("%Y%m%d")
-        total_results['list'] = results
-        json_result = json.dumps(total_results)
-        entry = stock_result.get_json('magicformula')
-        entry.content = json_result
-        stock_result.set_json('magicformula', entry)
-
-        
-    def __update_json(self):
-        taskqueue.add(url='/tasks/bae', method='GET')
-
-            
         
 application = webapp.WSGIApplication([('/tasks/magicformula', MagicFormulaHandler),
                                       ('/tasks/grahamformula', GrahamFormulaHandler),

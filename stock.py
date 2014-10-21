@@ -23,6 +23,11 @@ class Stock(db.Model):
     earnings_date = db.DateProperty(indexed=False)
     category = db.StringProperty(indexed=False)
     subcategory = db.StringProperty(indexed=False)
+    lastest_total_assets = db.FloatProperty(indexed=False)
+    lastest_total_liability = db.FloatProperty(indexed=False)
+    lastest_net_profit = db.FloatProperty(indexed=False)
+    lastest_ownership_interest = db.FloatProperty(indexed=False)
+    lastest_earnings_date = db.DateProperty(indexed=False)
     
     
 class NetCurrentAssetApproachStockView(object):
@@ -48,11 +53,11 @@ class NetCurrentAssetApproachStockView(object):
         self.ticker = s.ticker
         self.title = s.title
         self.market_capital = s.market_capital
-        self.net_profit = s.net_profit
-        self.ownership_interest = s.ownership_interest
-        self.total_liability = s.total_liability
+        self.net_profit = s.lastest_net_profit
+        self.ownership_interest = s.lastest_ownership_interest
+        self.total_liability = s.lastest_total_liability
         self.current_assets = s.current_assets
-        self.earnings_date = s.earnings_date
+        self.earnings_date = s.lastest_earnings_date
         self.category = s.category
         self.subcategory = s.subcategory
         self.pe = self.market_capital / self.net_profit
@@ -92,6 +97,7 @@ class GrahamFormulaStockView(object):
         self.roe = 0.0
         self.debt_asset_ratio = 0.0
         self.color = ""
+        self.pepb = ""
         
     def format(self):
         if self.roe >= 15:
@@ -99,6 +105,7 @@ class GrahamFormulaStockView(object):
         else:
             self.color = "#991111"
         self.market_capital = "%.2f亿" % (self.market_capital / 100000000)
+        self.pepb = "%.1f" % (self.pe * self.pb)
         self.roe = "%.1f%%" % (self.roe)
         self.pe = "%.1f" % (self.pe)
         self.pb = "%.1f" % (self.pb)
@@ -109,11 +116,11 @@ class GrahamFormulaStockView(object):
         self.ticker = s.ticker
         self.title = s.title
         self.market_capital = s.market_capital
-        self.net_profit = s.net_profit
-        self.ownership_interest = s.ownership_interest
-        self.total_assets = s.total_assets
-        self.total_liability = s.total_liability
-        self.earnings_date = s.earnings_date
+        self.net_profit = s.lastest_net_profit
+        self.ownership_interest = s.lastest_ownership_interest
+        self.total_assets = s.lastest_total_assets
+        self.total_liability = s.lastest_total_liability
+        self.earnings_date = s.lastest_earnings_date
         self.category = s.category
         self.subcategory = s.subcategory
         self.pe = self.market_capital / self.net_profit

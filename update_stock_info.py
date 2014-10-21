@@ -12,7 +12,6 @@ from google.appengine.api.labs import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
-import exchange_rate
 import stock
 
 
@@ -57,13 +56,11 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
             return data
         
     def get(self):
-        usd = exchange_rate.get().usd
-        hkd = exchange_rate.get().hkd
         data = self.__get_page_content()
         data = json.loads(data)
         count = 0
         for stock in data['searchresults']:
-            if stock['ticker'].find('399')==0 or stock['ticker'].find('000')==0 and stock['exchange']=='SHA':
+            if stock['ticker'].find('399') == 0 or stock['ticker'].find('000') == 0 and stock['exchange'] == 'SHA' or stock['ticker'].find('900') == 0 and stock['exchange'] == 'SHA' or stock['ticker'].find('200') == 0 and stock['exchange'] == 'SHE':
                 continue
             queue_name = 'queue' + str(count % 10)
             taskqueue.add(url='/tasks/updatesinglemarketcapital',
@@ -72,9 +69,7 @@ class UpdateManyMarketCapitalHandler(webapp.RequestHandler):
                                   'title' : stock['title'],
                                   'exchange' : stock['exchange'],
                                   'local_currency_symbol' : stock['local_currency_symbol'],
-                                  'value' : stock['columns'][0]['value'],
-                                  'usd' : usd,
-                                  'hkd' : hkd},
+                                  'value' : stock['columns'][0]['value']},
                           method='GET')
             count += 1
         
@@ -125,17 +120,15 @@ class UpdateSingleMarketCapitalHandler(webapp.RequestHandler):
         ticker = self.request.get('ticker')
         exchange = self.request.get('exchange')
         local_currency_symbol = self.request.get('local_currency_symbol')
-        usd = self.request.get('usd')
-        hkd = self.request.get('hkd')
         value = self.__get_page_content(ticker, exchange)
         if value < 0:
             value = self.__change_unit(self.request.get('value'))
         if local_currency_symbol.encode('UTF-8') == "￥":
             rate = 1
         elif local_currency_symbol == 'US$':
-            rate = string.atof(usd)
+            raise BlankEarnings("Not here")
         elif local_currency_symbol == 'HK$':
-            rate = string.atof(hkd)
+            raise BlankEarnings("Not here")
         elif local_currency_symbol == '-' and ticker.find('900') == -1 and ticker.find('200') == -1:
             rate = 1
         else:
@@ -277,6 +270,72 @@ class UpdateEarningsHandler(webapp.RequestHandler):
     def __get_current_assets(self, balance):
         current_assets = string.atof(balance['流动资产合计'])
         return current_assets
+    
+    def __update_lastest_earnings(self):
+        ticker = self.request.get('ticker')
+        entry = stock.get(ticker)
+        balance = self.__get_balance_earnings()
+        profit = self.__get_profit_earnings()
+        year = datetime.date.today().year
+        for i in range(3):
+            earnings_date = self.__get_lastest_earnings_date(year - i, balance, profit)
+            if earnings_date is not None:
+                break
+        if earnings_date is None:
+            logging.warn('There is no earnings date for %s' % (ticker))
+            return
+        else:
+            try:
+                bank_flag = False
+                if earnings_date.month == 12:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    total_assets = self.__get_total_assets(balance[this_earnings_date])
+                    total_liability = self.__get_total_liability(balance[this_earnings_date])
+                    net_profit = self.__get_net_profit(profit[this_earnings_date])
+                    ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
+                else:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
+                    last_year_date = datetime.date(year=earnings_date.year - 1, month=12, day=31).strftime('%Y%m%d')
+                    total_assets = self.__get_total_assets(balance[this_earnings_date])
+                    total_liability = self.__get_total_liability(balance[this_earnings_date])
+                    ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
+                    net_profit = (self.__get_net_profit(profit[this_earnings_date]) 
+                                  + self.__get_net_profit(profit[last_year_date]) 
+                                  - self.__get_net_profit(profit[last_earnings_date]))
+            except KeyError as ke:
+                logging.exception(ke)
+                bank_flag = True
+                if earnings_date.month == 12:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    net_profit = string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
+                    total_assets = string.atof(balance[this_earnings_date]['资产总计'])
+                    total_liability = string.atof(balance[this_earnings_date]['负债合计'])
+                    ownership_interest = string.atof(balance[this_earnings_date]['归属于母公司股东的权益'])
+                else:
+                    this_earnings_date = earnings_date.strftime('%Y%m%d')
+                    last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
+                    last_year_date = datetime.date(year=earnings_date.year - 1, month=12, day=31).strftime('%Y%m%d')
+                    total_assets = string.atof(balance[this_earnings_date]['资产总计'])
+                    total_liability = string.atof(balance[this_earnings_date]['负债合计'])
+                    ownership_interest = string.atof(balance[this_earnings_date]['归属于母公司股东的权益'])
+                    net_profit = (string.atof(profit[this_earnings_date]['归属于母公司的净利润'])
+                                  + string.atof(profit[last_year_date]['归属于母公司的净利润'])
+                                  - string.atof(profit[last_earnings_date]['归属于母公司的净利润']))
+                entry.lastest_earnings_date = earnings_date
+                entry.lastest_ownership_interest = ownership_interest
+                entry.lastest_net_profit = net_profit
+                entry.lastest_total_assets = total_assets
+                entry.lastest_total_liability = total_liability
+                stock.put(ticker, entry)
+                logging.info("Firstly %s is a bank" % (ticker))
+                return
+            entry.lastest_earnings_date = earnings_date
+            entry.lastest_ownership_interest = ownership_interest
+            entry.lastest_net_profit = net_profit
+            entry.lastest_total_assets = total_assets
+            entry.lastest_total_liability = total_liability
+            stock.put(ticker, entry)
         
     def __update_earnings(self):
         ticker = self.request.get('ticker')
@@ -384,10 +443,31 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                 return None
         else:
             return None
+        
+    def __get_lastest_earnings_date(self, year, balance, profit):
+        q4 = datetime.date(year=year, month=12, day=31)
+        q3 = datetime.date(year=year, month=9, day=30)
+        q2 = datetime.date(year=year, month=6, day=30)
+        q1 = datetime.date(year=year, month=3, day=31)
+        last_year = year - 1
+        if q4.strftime('%Y%m%d') in balance and q4.strftime('%Y%m%d') in profit:
+            return q4
+        elif q4.replace(year=last_year).strftime('%Y%m%d') in balance and q4.replace(year=last_year).strftime('%Y%m%d') in profit:
+            if q3.strftime('%Y%m%d') in balance and q3.strftime('%Y%m%d') in profit and q3.replace(year=last_year).strftime('%Y%m%d') in balance and q3.replace(year=last_year).strftime('%Y%m%d') in profit:
+                return q3
+            elif q2.strftime('%Y%m%d') in balance and q2.strftime('%Y%m%d') in profit and q2.replace(year=last_year).strftime('%Y%m%d') in balance and q2.replace(year=last_year).strftime('%Y%m%d') in profit:
+                return q2
+            elif q1.strftime('%Y%m%d') in balance and q1.strftime('%Y%m%d') in profit and q1.replace(year=last_year).strftime('%Y%m%d') in balance and q1.replace(year=last_year).strftime('%Y%m%d') in profit:
+                return q1
+            else:
+                return None
+        else:
+            return None
             
     def get(self):
         ticker = self.request.get('ticker')
         self.__update_earnings()
+        self.__update_lastest_earnings()
         
 application = webapp.WSGIApplication([('/tasks/updatestockinfo', UpdateStockInfoHandler),
                                       ('/tasks/updatemanymarketcapital', UpdateManyMarketCapitalHandler),

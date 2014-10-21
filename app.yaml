@@ -8,10 +8,6 @@ inbound_services:
 - warmup
 
 handlers:
-- url: /tasks/bae
-  script: bae.py
-  login: admin
-  
 - url: /tasks/updatestockinfo
   script: update_stock_info.py
   login: admin
@@ -24,10 +20,6 @@ handlers:
   script: update_stock_info.py
   login: admin
 
-- url: /tasks/updateexchangerate
-  script: exchange_rate.py
-  login: admin
-  
 - url: /tasks/.*formula
   script: show_stock_info.py
   login: admin
@@ -48,10 +40,6 @@ handlers:
   
 - url: /client
   script: postoffice.py
-  login: admin
-  
-- url: /tasks/updatestockindex
-  script: stock_index.py
   login: admin
   
 - url: /tasks/updategdp
