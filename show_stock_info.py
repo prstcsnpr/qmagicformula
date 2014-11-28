@@ -46,18 +46,19 @@ class NetCurrentAssetApproachHandler(webapp.RequestHandler):
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
         stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
-        values['stocks'] = stocks[0 : len(stocks)]
-        values['PB'] = "%.4f" % (pb)
-        values['PE'] = "%.2f" % (pe)
-        values['ROE'] = "%.1f%%" % (roe)
-        values['MCGDP'] = "%.0f%%" % (mc_gdp)
-        content = template.render('netcurrentassetapproach.html', values)
-        self.response.write(content)
-        self.__send_mail(content)
-        entry = stock_result.get_html('netcurrentassetapproach')
-        entry.content = content
-        stock_result.set_html('netcurrentassetapproach', entry)
-        postoffice.post("netcurrentassetapproach", "净流动资产法")
+        if 0 != len(stocks):
+            values['stocks'] = stocks[0 : len(stocks)]
+            values['PB'] = "%.4f" % (pb)
+            values['PE'] = "%.2f" % (pe)
+            values['ROE'] = "%.1f%%" % (roe)
+            values['MCGDP'] = "%.0f%%" % (mc_gdp)
+            content = template.render('netcurrentassetapproach.html', values)
+            self.response.write(content)
+            self.__send_mail(content)
+            entry = stock_result.get_html('netcurrentassetapproach')
+            entry.content = content
+            stock_result.set_html('netcurrentassetapproach', entry)
+            postoffice.post("netcurrentassetapproach", "净流动资产法")
         
     def __send_mail(self, content):
         receiver="magicformula@googlegroups.com"
@@ -168,18 +169,19 @@ class GrahamFormulaHandler(webapp.RequestHandler):
         query = db.Query(stock.Stock)
         stocks = query.fetch(10000)
         stocks, pb, pe, roe, mc_gdp = self.__filter(stocks)
-        values['stocks'] = stocks[0 : len(stocks)]
-        values['PB'] = "%.4f" % (pb)
-        values['PE'] = "%.2f" % (pe)
-        values['ROE'] = "%.1f%%" % (roe)
-        values['MCGDP'] = "%.0f%%" % (mc_gdp)
-        content = template.render('grahamformula.html', values)
-        self.response.write(content)
-        self.__send_mail(content)
-        entry = stock_result.get_html('grahamformula')
-        entry.content = content
-        stock_result.set_html('grahamformula', entry)
-        postoffice.post("grahamformula", "格雷厄姆公式")
+        if 0 != len(stocks):
+            values['stocks'] = stocks[0 : len(stocks)]
+            values['PB'] = "%.4f" % (pb)
+            values['PE'] = "%.2f" % (pe)
+            values['ROE'] = "%.1f%%" % (roe)
+            values['MCGDP'] = "%.0f%%" % (mc_gdp)
+            content = template.render('grahamformula.html', values)
+            self.response.write(content)
+            self.__send_mail(content)
+            entry = stock_result.get_html('grahamformula')
+            entry.content = content
+            stock_result.set_html('grahamformula', entry)
+            postoffice.post("grahamformula", "格雷厄姆公式")
     
 class MagicFormulaHandler(webapp.RequestHandler):
     
