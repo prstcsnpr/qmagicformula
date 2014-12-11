@@ -28,8 +28,9 @@ class GDPHTMLParser(HTMLParser):
                     self.map_flag = True
         elif 'tr' == tag:
             if self.map_flag:
-                if 0 == len(attrs):
-                    self.list_flag = True
+                for name, value in attrs:
+                    if 'class' == name and '' == value:
+                        self.list_flag = True
                     
     def __get_key(self, data):
         if data.find('1-4') > 0:
