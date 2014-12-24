@@ -293,6 +293,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     total_liability = self.__get_total_liability(balance[this_earnings_date])
                     net_profit = self.__get_net_profit(profit[this_earnings_date])
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
+                    current_assets = self.__get_current_assets(balance[this_earnings_date])
                 else:
                     this_earnings_date = earnings_date.strftime('%Y%m%d')
                     last_earnings_date = earnings_date.replace(earnings_date.year - 1).strftime('%Y%m%d')
@@ -300,6 +301,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
                     total_assets = self.__get_total_assets(balance[this_earnings_date])
                     total_liability = self.__get_total_liability(balance[this_earnings_date])
                     ownership_interest = self.__get_ownership_interest(balance[this_earnings_date])
+                    current_assets = self.__get_current_assets(balance[this_earnings_date])
                     net_profit = (self.__get_net_profit(profit[this_earnings_date]) 
                                   + self.__get_net_profit(profit[last_year_date]) 
                                   - self.__get_net_profit(profit[last_earnings_date]))
@@ -335,6 +337,7 @@ class UpdateEarningsHandler(webapp.RequestHandler):
             entry.lastest_net_profit = net_profit
             entry.lastest_total_assets = total_assets
             entry.lastest_total_liability = total_liability
+            entry.lastest_current_assets = current_assets
             stock.put(ticker, entry)
         
     def __update_earnings(self):

@@ -28,6 +28,7 @@ class Stock(db.Model):
     lastest_net_profit = db.FloatProperty(indexed=False)
     lastest_ownership_interest = db.FloatProperty(indexed=False)
     lastest_earnings_date = db.DateProperty(indexed=False)
+    lastest_current_assets = db.FloatProperty(indexed=False)
     
     
 class NetCurrentAssetApproachStockView(object):
@@ -56,7 +57,7 @@ class NetCurrentAssetApproachStockView(object):
         self.net_profit = s.lastest_net_profit
         self.ownership_interest = s.lastest_ownership_interest
         self.total_liability = s.lastest_total_liability
-        self.current_assets = s.current_assets
+        self.current_assets = s.lastest_current_assets
         self.earnings_date = s.lastest_earnings_date
         self.category = s.category
         self.subcategory = s.subcategory
