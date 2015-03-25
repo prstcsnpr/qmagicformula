@@ -225,6 +225,9 @@ class MagicFormulaHandler(webapp.RequestHandler):
                 s.subcategory = ""
                 content.append("The stock (%s, %s) don't have category\n" % (s.ticker, s.title))
                 continue
+            if s.tangible_asset == 0:
+                content.append("The stock (%s, %s) tangible asset is 0\n" % (s.ticker, s.title))
+                continue
             if (s.category.find('D') > 0 or s.category.find('G') > 0 or s.category.find('N') > 0):
                 content.append("The stock (%s, %s) is Public Utilities\n" % (s.ticker, s.title))
                 miss.append(s.ticker)
