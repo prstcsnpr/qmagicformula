@@ -3,10 +3,18 @@ cron:
 - description: update stock info
   url: /tasks/updatestockinfo
   schedule: every mon,tue,wed,thu,fri of month 07:20
-
-- description: show stock info
-  url: /tasks/showstockindex
+  
+- description: show magicformula info
+  url: /tasks/magicformula
   schedule: every mon,tue,wed,thu,fri of month 08:00
+  
+- description: show grahamformula info
+  url: /tasks/grahamformula
+  schedule: every mon,tue,wed,thu,fri of month 08:10
+  
+- description: show netcurrentassetapproach info
+  url: /tasks/netcurrentassetapproach
+  schedule: every mon,tue,wed,thu,fri of month 08:20
   
 - description: update gdp
   url: /tasks/updategdp
